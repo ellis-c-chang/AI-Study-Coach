@@ -18,23 +18,23 @@ const Chatbot = () => {
   };
 
   return (
-    <div className="p-4 shadow-lg rounded-lg bg-white">
-      <h2 className="text-xl font-bold mb-2">Ask the AI</h2>
-      <form onSubmit={handleSubmit} className="flex flex-col">
+    <div className="flex flex-col w-full bg-gradient-to-br from-blue-100 to-green-100 p-6 rounded-lg shadow-md">
+      <h2 className="text-2xl font-semibold text-gray-800 text-center mb-4">AI Chat Assistant</h2>
+      <form onSubmit={handleSubmit} className="flex items-center gap-3">
         <input
           type="text"
-          placeholder="Ask a question..."
+          placeholder="Ask me anything..."
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          className="block w-full p-2 border rounded mb-2"
+          className="flex-1 p-3 rounded-md border shadow-sm outline-none focus:ring-2 focus:ring-blue-400"
         />
-        <button type="submit" className="bg-green-500 text-white p-2 rounded">
+        <button type="submit" className="px-5 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">
           Send
         </button>
       </form>
       {response && (
-        <div className="mt-4 bg-gray-100 p-3 rounded">
-          <strong>AI Response:</strong> {response}
+        <div className="mt-4 p-4 bg-white shadow rounded-md">
+          <strong>AI:</strong> {response}
         </div>
       )}
     </div>
@@ -42,3 +42,4 @@ const Chatbot = () => {
 };
 
 export default Chatbot;
+

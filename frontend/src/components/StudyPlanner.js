@@ -24,36 +24,39 @@ const StudyPlanner = ({ user }) => {
   };
 
   return (
-    <div className="p-4 shadow-lg rounded-lg bg-white">
-      <h2 className="text-xl font-bold mb-2">Study Planner</h2>
-      <form onSubmit={handleSubmit} className="flex flex-col">
+    <div className="flex flex-col w-full bg-gradient-to-br from-green-100 to-blue-100 p-6 rounded-lg shadow-md">
+      <h2 className="text-2xl font-semibold text-gray-800 text-center mb-4">Plan Your Study</h2>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <input
           type="text"
-          placeholder="Subject"
+          placeholder="Enter subject..."
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
-          className="block w-full p-2 border rounded mb-2"
+          className="p-3 rounded-md border shadow-sm outline-none focus:ring-2 focus:ring-green-400"
         />
         <input
           type="number"
           placeholder="Duration (minutes)"
           value={duration}
           onChange={(e) => setDuration(e.target.value)}
-          className="block w-full p-2 border rounded mb-2"
+          className="p-3 rounded-md border shadow-sm outline-none focus:ring-2 focus:ring-green-400"
         />
-        <button type="submit" className="bg-blue-500 text-white p-2 rounded">
-          Add Study Session
+        <button type="submit" className="px-5 py-3 bg-green-500 text-white rounded-md hover:bg-green-600 transition">
+          Add Session
         </button>
       </form>
-      <ul className="mt-4">
-        {sessions.map((session) => (
-          <li key={session.id} className="p-2 border-b">
-            {session.subject} - {session.duration} mins
-          </li>
-        ))}
-      </ul>
+      {sessions.length > 0 && (
+        <ul className="mt-4 divide-y divide-gray-200 bg-white p-4 rounded-md shadow">
+          {sessions.map((session) => (
+            <li key={session.id} className="py-2">
+              📚 {session.subject} - {session.duration} mins
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };
 
 export default StudyPlanner;
+
