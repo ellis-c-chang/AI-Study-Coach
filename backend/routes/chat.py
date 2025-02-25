@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from openai import OpenAI
+import openai
 import os
 from dotenv import load_dotenv
 from backend.utils.error_handler import handle_error
@@ -8,13 +8,16 @@ load_dotenv()
 
 chat_bp = Blueprint('chat', __name__)
 
-# Initialize OpenAI API key from .env
-#openai.api_key = os.getenv("OPENAI_API_KEY")
-
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Read OpenAI API Key
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 USE_OPENAI_API = os.getenv("USE_OPENAI_API", "False") == "True"
 
-#print("Loaded OpenAI API Key:", openai.api_key)
+# Ensure API Key is correctly loaded
+if not OPENAI_API_KEY:
+    raise ValueError("OpenAI API Key is missing. Please check your .env file.")
+
+# Initialize OpenAI client
+client = openai.Client(api_key=OPENAI_API_KEY)
 
 # Chat endpoint
 @chat_bp.route('/', methods=['POST'])
@@ -26,13 +29,20 @@ def chat_with_ai():
         if not user_message:
             return handle_error('Message is required', 400)
 
-        # mock response for development
+        # Return mock response if AI response is disabled
         if not USE_OPENAI_API:
-            mock_response = f"(Mock Response) You asked: '{user_message}'. Here's a helpful suggestion."
+            mock_responses = {
+                "Tell me a joke.": "Why did the chicken cross the road? To get to the other side!",
+                "What is AI?": "AI stands for Artificial Intelligence, which enables machines to simulate human intelligence.",
+                "Who are you?": "I am your AI-powered study assistant, here to help you learn efficiently!"
+            }
+            # Return a predefined response if available, otherwise a generic message
+            mock_response = mock_responses.get(user_message, f"(Mock Response) You asked: '{user_message}'. Here's a helpful suggestion.")
             return jsonify({'response': mock_response}), 200
 
+        # Call OpenAI API
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": "You are a helpful study assistant."},
                 {"role": "user", "content": user_message}
@@ -40,11 +50,18 @@ def chat_with_ai():
             max_tokens=150,
             temperature=0.7
         )
-        answer = response['choices'][0]['message']['content'].strip()
+
+        # Parse API response
+        choices = response.choices
+        if not choices:
+            return handle_error('No valid response from OpenAI', 500)
+
+        answer = choices[0].message.content.strip()
         return jsonify({'response': answer}), 200
+
+    except openai.OpenAIError as e:  # Handle OpenAI API errors
+        print(f"OpenAI API Error: {str(e)}")
+        return handle_error(f"OpenAI API error: {str(e)}", 500)
     except Exception as e:
-        print(f"OpenAI Error: {str(e)}")
-        return handle_error('Failed to get a response from OpenAI', 500)
-    #except Exception as e:
-    #    print(f"Chatbot Error: {str(e)}")
-    #    return handle_error('An error occurred while processing your request', 500)
+        print(f"Chatbot Error: {str(e)}")
+        return handle_error('An error occurred while processing your request', 500)
