@@ -26,7 +26,7 @@ const LoginForm = ({ setUser }) => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 to-green-100">
+    <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-blue-100 to-green-100">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-xl border border-gray-200">
         
         {/* Software Name - Highlighted */}
