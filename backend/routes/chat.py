@@ -41,13 +41,15 @@ def chat_with_ai():
             return jsonify({'response': mock_response}), 200
 
         # Call OpenAI API
+        system_prompt = data.get('system', "You are a helpful study assistant. You help students plan, stay motivated, and understand difficult concepts.")
+        user_message = data.get('message', '')
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "You are a helpful study assistant. You help students plan, stay motivated, and understand difficult concepts."},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message}
             ],
-            max_tokens=150,
+            max_tokens=300,
             temperature=0.7
         )
 

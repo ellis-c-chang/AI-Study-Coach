@@ -14,3 +14,14 @@ export const completeStudySession = async (sessionId) => {
   const response = await API.put(`/study_sessions/complete/${sessionId}`);
   return response.data;
 };
+
+export const updateStudySession = async (sessionId, updatedData) => {
+  const response = await API.put(`/study_sessions/${sessionId}`, updatedData);
+  return response.data;
+};
+
+export const deleteStudySession = async (sessionId) => {
+  const response = await API.delete(`/study_sessions/${sessionId}`);
+  return response.data;
+};
+

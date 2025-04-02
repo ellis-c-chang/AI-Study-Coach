@@ -29,7 +29,7 @@ const App = () => {
             </h2>
 
             {/* Render Components Dynamically */}
-            {selectedTab === 'chatbot' && <Chatbot />}
+            {selectedTab === 'chatbot' && <Chatbot user={user} />}
             {selectedTab === 'studyPlanner' && <StudyPlanner user={user} />}
             {selectedTab === 'focusTracker' && <FocusTracker user={user} />}
             {selectedTab === 'kanban' && <KanbanBoard />} {/* ✅ Add Kanban Board */}

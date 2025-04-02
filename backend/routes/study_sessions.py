@@ -61,3 +61,18 @@ def complete_study_session(session_id):
     except Exception as e:
         print(f"Complete Session Error: {str(e)}")
         return handle_error('Failed to update session'), 500
+
+# Delete a study session
+@sessions_bp.route('/<int:session_id>', methods=['DELETE'])
+def delete_study_session(session_id):
+    try:
+        session = StudySession.query.get(session_id)
+        if not session:
+            return handle_error('Session not found', 404)
+        
+        db.session.delete(session)
+        db.session.commit()
+        return jsonify({'message': 'Session deleted successfully'}), 200
+    except Exception as e:
+        print(f"Delete Session Error: {str(e)}")
+        return handle_error('Failed to delete session', 500)
