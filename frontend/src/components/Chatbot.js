@@ -28,35 +28,40 @@ const Chatbot = ({ user }) => {
     const userMessage = { sender: 'user', text: message };
     setChatLog((prev) => [...prev, userMessage]);
 
-    // 👉 正在等待用户确认添加日程
     if (isAwaitingConfirmation && pendingPlan) {
-      if (message.toLowerCase().includes("confirm")) {
-        for (const s of pendingPlan.sessions) {
-          const startDatetime = `${s.date}T${s.start}`;
-          await createStudySession({
-            user_id: user.user_id,
-            subject: pendingPlan.subject,
-            duration: s.duration,
-            scheduled_time: startDatetime
-          });
-        }
-        setChatLog((prev) => [...prev, {
-          sender: 'ai',
-          text: "✅ Your schedule has been added to the calendar. You can view it in the Study Planner."
-        }]);
-        setIsAwaitingConfirmation(false);
-        setPendingPlan(null);
-      } else {
-        setChatLog((prev) => [...prev, {
-          sender: 'ai',
-          text: "Let me know if you'd like to modify anything, or type 'confirm' to add this schedule to your calendar."
-        }]);
-      }
-      setMessage('');
-      return;
-    }
+  const msgLower = message.toLowerCase();
 
-    // 🎯 检查是否涉及计划意图
+  if (msgLower.includes('confirm')) {
+    for (let s of pendingPlan.sessions) {
+      await createStudySession({
+        user_id: user.user_id,
+        subject: pendingPlan.subject || 'Study',
+        scheduled_time: s.date + 'T' + s.start,
+        duration: s.duration,
+      });
+    }
+    setChatLog((prev) => [...prev, { sender: 'ai', text: 'Schedule added to your calendar! You can check it in the Study Planner tab.' }]);
+    setPendingPlan(null);
+    setIsAwaitingConfirmation(false);
+  } else if (
+    msgLower.includes('cancel') ||
+    msgLower.includes('nevermind') ||
+    msgLower.includes("don't need") ||
+    msgLower.includes("no need")
+  ) {
+    setChatLog((prev) => [...prev, { sender: 'ai', text: 'Got it. The schedule has been discarded.' }]);
+    setPendingPlan(null);
+    setIsAwaitingConfirmation(false);
+  } else {
+      setChatLog((prev) => [...prev, {
+      sender: 'ai',
+      text: "Let me know if you'd like to modify anything, or type 'confirm' to add this schedule to your calendar. Or type 'cancel' to discard it.",
+    }]);
+  }
+  return;
+}
+
+
     const lower = message.toLowerCase();
     const planningKeywords = ["exam", "test", "essay", "due", "review", "schedule", "prepare"];
     const containsPlanningIntent = planningKeywords.some(word => lower.includes(word));
@@ -66,12 +71,11 @@ const Chatbot = ({ user }) => {
         const planStr = await extractSchedulePlan(message);
         const plan = JSON.parse(planStr);
 
-        // ✅ 转换预览文本
         let preview = `Based on your input, I generated a study plan for "${plan.subject}":\n`;
         plan.sessions.forEach(s => {
           preview += `• ${s.date} ${s.start} – ${s.duration} mins: ${plan.subject}\n`;
         });
-        preview += `\nLet me know if you'd like to modify anything, or type "confirm" to add it to your calendar.`;
+        preview += `\nLet me know if you'd like to modify anything, or type "confirm" to add it to your calendar. Or type 'cancel' to discard it.`;
 
         setPendingPlan(plan);
         setIsAwaitingConfirmation(true);
@@ -87,7 +91,6 @@ const Chatbot = ({ user }) => {
       return;
     }
 
-    // 普通聊天
     try {
       const reply = await askAI({ message });
       setChatLog((prev) => [...prev, { sender: 'ai', text: reply.response }]);
