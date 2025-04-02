@@ -9,3 +9,8 @@ export const getStudySessions = async (userId) => {
   const response = await API.get(`/study_sessions/${userId}`);
   return response.data;
 };
+
+export const completeStudySession = async (sessionId) => {
+  const response = await API.put(`/study_sessions/complete/${sessionId}`);
+  return response.data;
+};

@@ -1,10 +1,13 @@
 import os
 from flask import Flask
 from flask_cors import CORS
+from flask_migrate import Migrate
 from backend.database import db
+from backend.database import models
 from backend.routes.auth import auth_bp
 from backend.routes.study_sessions import sessions_bp
 from backend.routes.chat import chat_bp
+from backend.routes.kanban import kanban_bp
 from backend.config import DevelopmentConfig, ProductionConfig  # Centralized config
 from backend.utils.scheduler import start_scheduler  # Background task scheduler
 from dotenv import load_dotenv
@@ -28,6 +31,7 @@ def create_app():
 
     # Initialize database connection
     db.init_app(app)
+    Migrate(app, db)
 
     # Enable CORS (Frontend React app can connect)
     CORS(app, supports_credentials=True, resources={r"/*": {"origins": "http://localhost:3000"}}, methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
@@ -36,9 +40,10 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(sessions_bp, url_prefix='/study_sessions')
     app.register_blueprint(chat_bp, url_prefix='/chat')
+    app.register_blueprint(kanban_bp, url_prefix='/tasks')  # Register Kanban routes
 
     # Start background tasks (like reminders)
-    start_scheduler()
+    start_scheduler(app)
 
     return app
 

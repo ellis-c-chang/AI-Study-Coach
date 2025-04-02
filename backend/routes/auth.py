@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from backend.database.models import User, db
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import IntegrityError
+from backend.utils.error_handler import handle_error
 
 auth_bp = Blueprint('auth', __name__)
 
