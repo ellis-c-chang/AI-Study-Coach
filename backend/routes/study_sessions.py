@@ -36,7 +36,7 @@ def get_study_sessions(user_id):
                 'subject': session.subject,
                 'duration': session.duration,
                 'start_time': session.start_time.isoformat(),
-                'scheduled_time': session.scheduled_time.isoformat(),
+                'scheduled_time': session.scheduled_time.isoformat() if session.scheduled_time else None,
                 'start_time': session.start_time.isoformat() if session.start_time else None,
                 'completed': session.completed
             }

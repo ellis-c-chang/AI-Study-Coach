@@ -44,7 +44,7 @@ def chat_with_ai():
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "You are a helpful study assistant."},
+                {"role": "system", "content": "You are a helpful study assistant. You help students plan, stay motivated, and understand difficult concepts."},
                 {"role": "user", "content": user_message}
             ],
             max_tokens=150,
