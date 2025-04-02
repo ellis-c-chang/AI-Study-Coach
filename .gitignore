@@ -6,7 +6,7 @@ backend/.env
 backend/.vscode/
 backend/instance/
 backend/.pytest_cache/
-backend/migrations/
+
 
 # Log files
 *.log
