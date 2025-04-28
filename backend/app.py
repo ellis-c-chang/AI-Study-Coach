@@ -8,6 +8,7 @@ from backend.routes.auth import auth_bp
 from backend.routes.study_sessions import sessions_bp
 from backend.routes.chat import chat_bp
 from backend.routes.kanban import kanban_bp
+from backend.routes.onboarding import onboarding_bp
 from backend.config import DevelopmentConfig, ProductionConfig  # Centralized config
 from backend.utils.scheduler import start_scheduler  # Background task scheduler
 from dotenv import load_dotenv
@@ -41,6 +42,7 @@ def create_app():
     app.register_blueprint(sessions_bp, url_prefix='/study_sessions')
     app.register_blueprint(chat_bp, url_prefix='/chat')
     app.register_blueprint(kanban_bp, url_prefix='/tasks')  # Register Kanban routes
+    app.register_blueprint(onboarding_bp, url_prefix='/onboarding')
 
     # Start background tasks (like reminders)
     start_scheduler(app)
