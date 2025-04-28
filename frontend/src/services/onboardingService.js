@@ -7,8 +7,13 @@ export const createProfile = async (profileData) => {
 };
 
 export const getProfile = async (userId) => {
-  const response = await API.get(`/onboarding/profile/${userId}`);
-  return response.data;
+  try {
+    const response = await API.get(`/onboarding/profile/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    throw error; // Rethrow the error for handling in the component
+  }
 };
 
 export const updateProfile = async (userId, profileData) => {

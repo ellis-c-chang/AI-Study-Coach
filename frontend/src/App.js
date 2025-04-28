@@ -18,34 +18,59 @@ const App = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [hasProfile, setHasProfile] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isNewUser, setIsNewUser] = useState(false); // New state for new user
+
+  const handleSetUser = (userData) => {
+    if (userData?.isNewUser) {
+      setIsNewUser(true);
+    }
+    setUser(userData);
+  };
 
   useEffect(() => {
     // Check if user is authenticated
+    if (user && isNewUser) {
+      setShowOnboarding(true);
+      setHasProfile(false);
+      console.log("New user detected, showing onboarding.");
+      return;
+    }
     const checkAuth = async () => {
       if (isAuthenticated()) {
-        const tokenData = JSON.parse(atob(getToken().split('.')[1]));
-        setUser({ 
-          user_id: tokenData.user_id, 
-          username: tokenData.username 
-        });
-        
-        // Check if user has completed onboarding
-        try {
-          await getProfile(tokenData.user_id);
-          setHasProfile(true);
+          try {
+          const tokenData = JSON.parse(atob(getToken().split('.')[1]));
+          const userData = {
+            user_id: tokenData.user_id,
+            username: tokenData.username
+          };
+          setUser(userData);
+          
+          // Check if user has completed onboarding
+          try {
+            await getProfile(tokenData.user_id);
+            console.log("Profile found, skipping onboarding");
+            setHasProfile(true);
+            setShowOnboarding(false);
+          } catch (error) {
+            console.log("No existing profile found, starting onboarding.");
+            setHasProfile(false);
+            setShowOnboarding(true);
+          }
         } catch (error) {
-          setShowOnboarding(true);
+          console.error("Error parsing token:", error);
+          localStorage.removeItem('token'); // Clear invalid token
         }
       }
       setLoading(false);
     };
     
     checkAuth();
-  }, []);
+  }, [])
 
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
     setHasProfile(true);
+    setIsNewUser(false);
   };
 
   if (loading) {
@@ -61,11 +86,13 @@ const App = () => {
     setHasProfile(false);
   };
 
+  console.log("Rendering with states:", { user, showOnboarding, hasProfile });
+
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-blue-100 to-green-100">
       {!user ? (
-        <LoginForm setUser={setUser} />
-      ) : showOnboarding && !hasProfile ? (
+        <LoginForm setUser={handleSetUser} />
+      ) : isNewUser || showOnboarding ? (
         <Onboarding user={user} onComplete={handleOnboardingComplete} />
       ) : (
         <div className="flex w-full">

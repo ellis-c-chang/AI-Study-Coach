@@ -14,6 +14,13 @@ export const removeToken = () => {
 
 export const register = async (userData) => {
   const response = await API.post('/auth/register', userData);
+  if (response.status === 201) {
+    const loginResponse = await login({
+      email: userData.email,
+      password: userData.password
+    });
+    return loginResponse;
+  }
   return response.data;
 };
 
@@ -24,21 +31,6 @@ export const login = async (userData) => {
   }
   return response.data;
 };
-
-
-// export const register = async (userData) => {
-//   const response = await API.post('/auth/register', userData, {
-//     withCredentials: true,  
-//   });
-//   return response.data;
-// };
-
-// export const login = async (userData) => {
-//   const response = await API.post('/auth/login', userData, {
-//     withCredentials: true,  
-//   });
-//   return response.data;
-// };
 
 export const logout = () => {
   localStorage.removeItem('token');
