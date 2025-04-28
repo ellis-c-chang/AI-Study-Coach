@@ -420,4 +420,4 @@ def get_leaderboard():
         
     except Exception as e:
         print(f"Error getting leaderboard: {str(e)}")
-        return handle_error('An error occurred while retrieving leaderboard', 500)
+        return handle_error('An error occurred while retrieving leaderboard', 500)    

@@ -113,8 +113,16 @@ const Gamification = ({ user }) => {
                 ) : (
                   achievements.slice(0, 3).map(achievement => (
                     <div key={achievement.id} className="border rounded-lg p-4 flex items-center">
-                      <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mr-4">
-                        <span className="text-yellow-600 text-2xl">🏆</span>
+                      <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mr-4">
+                        {achievement.badge_image ? (
+                          <img
+                            src={`/${achievement.badge_image}`}
+                            alt={achievement.name}
+                            className="w-8 h-8 object-contain"
+                          />
+                        ) : (
+                          <span className="text-yellow-600 text-2xl">🏆</span>
+                        )}
                       </div>
                       <div>
                         <h4 className="font-semibold">{achievement.name}</h4>
@@ -157,10 +165,18 @@ const Gamification = ({ user }) => {
                 </p>
               ) : (
                 achievements.map(achievement => (
-                  <div key={achievement.id} className="border rounded-lg p-4">
+                  <div key={achievement.id} className="border rounded-lg p-4 bg-blue-200">
                     <div className="flex items-center mb-3">
-                      <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mr-4">
-                        <span className="text-yellow-600 text-2xl">🏆</span>
+                      <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mr-4">
+                        {achievement.badge_image ? (
+                          <img
+                            src={`/${achievement.badge_image}`}
+                            alt={achievement.name}
+                            className="w-8 h-8 object-contain"
+                          />
+                        ) : (
+                          <span className="text-yellow-600 text-2xl">🏆</span>
+                        )}
                       </div>
                       <h4 className="text-lg font-semibold">{achievement.name}</h4>
                     </div>
