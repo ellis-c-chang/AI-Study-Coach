@@ -41,7 +41,8 @@ export const login = async (userData) => {
 // };
 
 export const logout = () => {
-  removeToken();
+  localStorage.removeItem('token');
+  return true;
 };
 
 export const isAuthenticated = () => {
