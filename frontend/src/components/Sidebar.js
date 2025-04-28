@@ -29,6 +29,12 @@ const Sidebar = ({ setSelectedTab }) => {
         >
           📌 To-Do List
         </li>
+        <li 
+          onClick={() => setSelectedTab('gamification')} 
+          className="cursor-pointer hover:bg-gray-700 p-2 rounded"
+        >
+          🏆 Achievements
+        </li>
       </ul>
     </div>
   );
