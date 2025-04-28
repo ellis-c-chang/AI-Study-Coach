@@ -41,6 +41,8 @@ const Sidebar = ({ setSelectedTab, handleLogout }) => {
           className="cursor-pointer hover:bg-gray-700 p-2 rounded"
         >
           🏆 Achievements
+        </li>
+        <li
           onClick={() => setSelectedTab('profile')}
           className="cursor-pointer hover:bg-gray-700 p-2 rounded"
         >
