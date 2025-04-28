@@ -5,6 +5,7 @@ import StudyPlanner from './components/StudyPlanner';
 import Sidebar from './components/Sidebar';
 import FocusTracker from './components/FocusTracker';
 import KanbanBoard from './components/KanbanBoard'; // ✅ Import KanbanBoard
+import Gamification from './components/Gamification';
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -33,6 +34,7 @@ const App = () => {
             {selectedTab === 'studyPlanner' && <StudyPlanner user={user} />}
             {selectedTab === 'focusTracker' && <FocusTracker user={user} />}
             {selectedTab === 'kanban' && <KanbanBoard />} {/* ✅ Add Kanban Board */}
+            {selectedTab === 'gamification' && <Gamification user={user} />}
           </div>
         </div>
       )}
