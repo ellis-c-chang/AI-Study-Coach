@@ -37,6 +37,10 @@ const Sidebar = ({ setSelectedTab, handleLogout }) => {
           📌 To-Do List
         </li>
         <li 
+          onClick={() => setSelectedTab('gamification')} 
+          className="cursor-pointer hover:bg-gray-700 p-2 rounded"
+        >
+          🏆 Achievements
           onClick={() => setSelectedTab('profile')}
           className="cursor-pointer hover:bg-gray-700 p-2 rounded"
         >
