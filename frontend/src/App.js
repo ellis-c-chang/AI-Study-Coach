@@ -8,6 +8,7 @@ import KanbanBoard from './components/KanbanBoard'; // ✅ Import KanbanBoard
 import Onboarding from './components/Onboarding';
 import { getProfile } from './services/onboardingService';
 import { isAuthenticated, getToken } from './services/authService';
+import UserProfile from './components/UserProfile';
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -51,6 +52,13 @@ const App = () => {
     </div>;
   }
 
+  const handleLogout = () => {
+    setUser(null);
+    setSelectedTab('chatbot');
+    setShowOnboarding(false);
+    setHasProfile(false);
+  };
+
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-blue-100 to-green-100">
       {!user ? (
@@ -60,7 +68,7 @@ const App = () => {
       ) : (
         <div className="flex w-full">
           {/* Sidebar Component */}
-          <Sidebar setSelectedTab={setSelectedTab} />
+          <Sidebar setSelectedTab={setSelectedTab} handleLogout={handleLogout} />
 
           {/* Main Content Area */}
           <div className="flex-1 p-8">
@@ -76,6 +84,7 @@ const App = () => {
             {selectedTab === 'studyPlanner' && <StudyPlanner user={user} />}
             {selectedTab === 'focusTracker' && <FocusTracker user={user} />}
             {selectedTab === 'kanban' && <KanbanBoard />} {/* ✅ Add Kanban Board */}
+            {selectedTab === 'profile' && <UserProfile user={user} />}
           </div>
         </div>
       )}
