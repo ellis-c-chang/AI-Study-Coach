@@ -14,7 +14,10 @@ import UserProfile from './components/UserProfile';
 
 const App = () => {
   const [user, setUser] = useState(null);
-  const [selectedTab, setSelectedTab] = useState('chatbot'); // Default to Chatbot
+  const [selectedTab, setSelectedTab] = useState(() => {
+    const savedTab = localStorage.getItem('selectedTab');
+    return savedTab || 'chatbot';
+  });
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [hasProfile, setHasProfile] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -26,6 +29,11 @@ const App = () => {
     }
     setUser(userData);
   };
+
+  const handleTabChange = (tab) => {
+    setSelectedTab(tab);
+    localStorage.setItem('selectedTab', tab); // Save selected tab to local storage
+  }
 
   useEffect(() => {
     // Check if user is authenticated
@@ -97,7 +105,7 @@ const App = () => {
       ) : (
         <div className="flex w-full">
           {/* Sidebar Component */}
-          <Sidebar setSelectedTab={setSelectedTab} handleLogout={handleLogout} />
+          <Sidebar setSelectedTab={handleTabChange} handleLogout={handleLogout} />
 
           {/* Main Content Area */}
           <div className="flex-1 p-8">
