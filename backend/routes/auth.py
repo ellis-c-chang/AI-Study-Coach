@@ -3,8 +3,14 @@ from backend.database.models import User, db
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import IntegrityError
 from backend.utils.error_handler import handle_error
+import jwt
+import datetime
+import os
 
 auth_bp = Blueprint('auth', __name__)
+
+JWT_SECRET = os.getenv('JWT_SECRET', 'default_secret_key')
+JWT_EXPIRATION = 24 * 60 * 60
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -26,7 +32,8 @@ def register():
         return handle_error('User with this email or username already exists.', 409)
     except Exception as e:
         print(f"Registration error: {str(e)}")
-        return jhandle_error('An error occurred during registration.', 500)
+        return handle_error('An error occurred during registration.', 500)
+
 @auth_bp.route('/login', methods=['POST'])
 def login():
     try:
@@ -37,10 +44,17 @@ def login():
         user = User.query.filter_by(email=data['email']).first()
 
         if user and check_password_hash(user.password, data['password']):
+            payload = {
+                'user_id': user.id,
+                'username': user.username,
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=JWT_EXPIRATION)
+            }
+            token = jwt.encode(payload, JWT_SECRET, algorithm='HS256')
             return jsonify({
                 'message': 'Login successful!',
                 'user_id': user.id,
-                'username': user.username
+                'username': user.username,
+                'token': token
             }), 200
         else:
             return handle_error('Invalid email or password', 401)
@@ -49,3 +63,25 @@ def login():
         print(f"Login error: {str(e)}")
         return handle_error('An error occurred during login', 500)
 
+def token_required(f):
+    from functools import wraps
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        auth_header = request.headers.get('Authorization')
+        if auth_header:
+            try:
+                token = auth_header.split(" ")[1]
+            except IndexError:
+                return handle_error('Token is missing!', 401)
+        if not token:
+            return handle_error('Token is missing!', 401)
+        try:
+            payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+            user_id = payload['user_id']
+        except jwt.ExpiredSignatureError:
+            return handle_error('Token has expired!', 401)
+        except jwt.InvalidTokenError:
+            return handle_error('Invalid token!', 401)
+        return f(*args, **kwargs)
+    return decorated
