@@ -12,17 +12,7 @@ export const getStudySessions = async (userId) => {
 
 export const completeStudySession = async (sessionId) => {
   const response = await API.put(`/study_sessions/complete/${sessionId}`);
-
-  try {
-    const pointsResponse = await API.post(`/gamification/award-session-points/${sessionId}`);
-    return {
-      ...response.data,
-      gamification: pointsResponse.data
-    };
-  } catch (error) {
-    console.error('Error awarding points:', error);
-    return response.data;
-  }
+  return response.data;
 };
 
 export const updateStudySession = async (sessionId, updatedData) => {

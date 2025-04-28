@@ -10,7 +10,6 @@ from backend.routes.chat import chat_bp
 from backend.routes.kanban import kanban_bp
 from backend.config import DevelopmentConfig, ProductionConfig  # Centralized config
 from backend.utils.scheduler import start_scheduler  # Background task scheduler
-from backend.routes.gamification import gamification_bp, initialize_achievements  # Gamification routes
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -42,7 +41,6 @@ def create_app():
     app.register_blueprint(sessions_bp, url_prefix='/study_sessions')
     app.register_blueprint(chat_bp, url_prefix='/chat')
     app.register_blueprint(kanban_bp, url_prefix='/tasks')  # Register Kanban routes
-    app.register_blueprint(gamification_bp, url_prefix='/gamification')  # Register gamification routes
 
     # Start background tasks (like reminders)
     start_scheduler(app)
@@ -51,9 +49,6 @@ def create_app():
 
 # Create and run the Flask app
 app = create_app()
-
-with app.app_context():
-    initialize_achievements()
 
 if __name__ == '__main__':
     app.run(debug=app.config['DEBUG'])
