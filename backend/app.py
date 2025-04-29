@@ -11,7 +11,6 @@ from backend.routes.kanban import kanban_bp
 from backend.routes.onboarding import onboarding_bp
 from backend.config import DevelopmentConfig, ProductionConfig  # Centralized config
 from backend.utils.scheduler import start_scheduler  # Background task scheduler
-from backend.routes.gamification import gamification_bp, initialize_achievements  # Gamification routes
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -53,9 +52,6 @@ def create_app():
 
 # Create and run the Flask app
 app = create_app()
-
-with app.app_context():
-    initialize_achievements()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=app.config['DEBUG'], use_reloader=False)
