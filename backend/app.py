@@ -41,7 +41,13 @@ def create_app():
 
     # Enable CORS (Frontend React app can connect)
     frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
-    CORS(app, supports_credentials=True, resources={r"/*": {"origins": frontend_url}}, methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+    allowed_origins = [
+        frontend_url, 
+        'http://localhost:3000', 
+        'http://ai-study-coach.vercel.app'
+    ]
+    allowed_origins = list(set([origin for origin in allowed_origins if origin]))
+    CORS(app, supports_credentials=True, resources={r"/*": {"origins": allowed_origins}}, methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
     # Register blueprints (Routes for different functionalities)
     app.register_blueprint(auth_bp, url_prefix='/auth')
