@@ -1,7 +1,7 @@
 import os
 from flask import Flask, request
 from flask_cors import CORS
-from flask_migrate import Migrate
+from flask_migrate import Migrate, upgrade
 from backend.database import db
 from backend.database import models
 from backend.routes.auth import auth_bp
@@ -40,25 +40,13 @@ def create_app():
     Migrate(app, db)
 
     # Enable CORS (Frontend React app can connect)
-    frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
-    allowed_origins = [
-        frontend_url, 
-        'http://localhost:3000', 
-        'http://ai-study-coach.vercel.app'
-    ]
-    allowed_origins = list(set([origin for origin in allowed_origins if origin]))
-    CORS(
-        app,
-        supports_credentials=True,
-        origins=["http://localhost:3000", "http://ai-study-coach.vercel.app", os.getenv('FRONTEND_URL')], 
-        allow_headers=["Content-Type", "Authorization", "Access-Control-Allow-Credentials"],
-        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        expose_headers=["Content-Type", "Authorization"])
-
-    @app.route('/', defaults={'path': ''}, methods=['OPTIONS'])
-    @app.route('/<path:path>', methods=['OPTIONS'])
-    def handle_options(path):
-        return '', 200
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Origin', 'https://ai-study-coach.vercel.app')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
 
     # Register blueprints (Routes for different functionalities)
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -76,9 +64,10 @@ def create_app():
 # Create and run the Flask app
 app = create_app()
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=app.config['DEBUG'], use_reloader=False)
+if __name__ != '__main__':
     with app.app_context():
         db.create_all()
         upgrade()
 
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=app.config['DEBUG'], use_reloader=False)

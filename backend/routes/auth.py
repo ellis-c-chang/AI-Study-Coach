@@ -1,5 +1,5 @@
 # backend/routes/auth.py - Add JWT functionality
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, make_response
 from backend.database.models import User, db
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import IntegrityError
@@ -14,6 +14,16 @@ auth_bp = Blueprint('auth', __name__)
 JWT_SECRET = os.getenv('JWT_SECRET_KEY', 'default_secret_key')
 JWT_EXPIRATION = 24 * 60 * 60  # 24 hours in seconds
 
+@auth_bp.route('/register', methods=['OPTIONS'])
+@auth_bp.route('/login', methods=['OPTIONS'])
+def auth_options():
+    response = make_response()
+    response.headers.add('Access-Control-Allow-Origin', 'https://ai-study-coach.vercel.app')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
+
 @auth_bp.route('/register', methods=['POST'])
 def register():
     try:
@@ -27,7 +37,10 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
-        return jsonify({'message': 'User registered successfully!'}), 201
+        response = jsonify({'message': 'User registered successfully!'})
+        response.headers.add('Access-Control-Allow-Origin', 'https://ai-study-coach.vercel.app')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response, 201
 
     except IntegrityError:
         db.session.rollback()
