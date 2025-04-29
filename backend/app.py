@@ -66,6 +66,10 @@ def create_app():
     app.register_blueprint(gamification_bp, url_prefix='/gamification')  # Register gamification routes
     app.register_blueprint(onboarding_bp, url_prefix='/onboarding')
 
+    # Initialize achievements 
+    with app.app_context():
+        initialize_achievements()  # Add this line
+
     # Start background tasks (like reminders)
     start_scheduler(app)
 
