@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
 from flask_migrate import Migrate
 from backend.database import db
@@ -47,7 +47,18 @@ def create_app():
         'http://ai-study-coach.vercel.app'
     ]
     allowed_origins = list(set([origin for origin in allowed_origins if origin]))
-    CORS(app, supports_credentials=True, resources={r"/*": {"origins": allowed_origins}}, methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+    CORS(
+        app,
+        supports_credentials=True,
+        origins=["http://localhost:3000", "http://ai-study-coach.vercel.app", os.getenv('FRONTEND_URL')], 
+        allow_headers=["Content-Type", "Authorization", "Access-Control-Allow-Credentials"],
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        expose_headers=["Content-Type", "Authorization"])
+
+    @app.route('/', defaults={'path': ''}, methods=['OPTIONS'])
+    @app.route('/<path:path>', methods=['OPTIONS'])
+    def handle_options(path):
+        return '', 200
 
     # Register blueprints (Routes for different functionalities)
     app.register_blueprint(auth_bp, url_prefix='/auth')
