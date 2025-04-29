@@ -19,8 +19,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 openai_api_key = os.getenv('OPENAI_API_KEY')
-if not openai_api_key:
+if not openai_api_key and os.getenv('FLASK_ENV') == 'production':
     raise ValueError("OpenAI API Key is missing. Please check your .env file.")
+
 
 def create_app():
     app = Flask(__name__)
