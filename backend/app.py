@@ -36,7 +36,7 @@ def create_app():
     Migrate(app, db)
 
     # Enable CORS (Frontend React app can connect)
-    CORS(app, supports_credentials=True, resources={r"/*": {"origins": "http://localhost:3000"}}, methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+    CORS(app, supports_credentials=True, resources={r"/*": {"origins": "http://localhost:3000", "FRONTEND_URL"}}, methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
     # Register blueprints (Routes for different functionalities)
     app.register_blueprint(auth_bp, url_prefix='/auth')
