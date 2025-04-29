@@ -88,26 +88,42 @@ const StudyPlanner = ({ user }) => {
   };
 
   const handleUpdateSession = async () => {
-    const duration = (new Date(editSession.end) - new Date(editSession.start)) / 60000;
-    await updateStudySession(selectedSession.id, {
-      user_id: user.user_id,
-      subject: editSession.subject,
-      duration,
-      scheduled_time: editSession.start,
-    });
+  if (!selectedSession.id.startsWith('personal-')) {
+    alert('Cannot edit group sessions!');
     setShowModal(false);
-    setSelectedSession(null);
-    setEditSession(null);
-    fetchSessions();
-  };
+    return;
+  }
+  const realId = selectedSession.id.replace('personal-', '');
+
+  const duration = (new Date(editSession.end) - new Date(editSession.start)) / 60000;
+  await updateStudySession(realId, {
+    user_id: user.user_id,
+    subject: editSession.subject,
+    duration,
+    scheduled_time: editSession.start,
+  });
+  setShowModal(false);
+  setSelectedSession(null);
+  setEditSession(null);
+  fetchSessions();
+};
+
 
   const handleDeleteSession = async () => {
-    await deleteStudySession(selectedSession.id);
+  if (!selectedSession.id.startsWith('personal-')) {
+    alert('Cannot delete group sessions!');
     setShowModal(false);
-    setSelectedSession(null);
-    setEditSession(null);
-    fetchSessions();
-  };
+    return;
+  }
+  const realId = selectedSession.id.replace('personal-', '');
+
+  await deleteStudySession(realId);
+  setShowModal(false);
+  setSelectedSession(null);
+  setEditSession(null);
+  fetchSessions();
+};
+
 
   const handleOutsideClick = (e) => {
     if (modalRef.current && !modalRef.current.contains(e.target)) {

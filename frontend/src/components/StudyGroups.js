@@ -60,24 +60,25 @@ const StudyGroups = ({ user }) => {
     }
   };
 
-  const handleAddSession = async (groupId) => {
+const handleAddSession = async (groupId) => {
   try {
     await addGroupSession(groupId, {
       subject: newSessionSubject,
       scheduled_time: newSessionTime,
-      duration: parseInt(newSessionDuration),
+      duration: Number(newSessionDuration),
     });
-    alert('Group session added successfully!');  
-    setAddingSessionGroupId(null);               
+    alert('Session added successfully');
+    setAddingSessionGroupId(null);
     setNewSessionSubject('');
     setNewSessionTime('');
     setNewSessionDuration('');
-    fetchGroups();                               
+    fetchGroups();  // 刷新一下
   } catch (error) {
     console.error('Error adding session:', error);
     alert('Failed to add session. Please try again.');
   }
 };
+
 
 
   const handleLeave = async (groupId) => {
