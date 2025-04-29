@@ -11,7 +11,7 @@ import os
 auth_bp = Blueprint('auth', __name__)
 
 # Get JWT secret from environment or config
-JWT_SECRET = os.getenv('JWT_SECRET', 'default_secret_key')
+JWT_SECRET = os.getenv('JWT_SECRET_KEY', 'default_secret_key')
 JWT_EXPIRATION = 24 * 60 * 60  # 24 hours in seconds
 
 @auth_bp.route('/register', methods=['POST'])

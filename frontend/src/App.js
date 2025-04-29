@@ -73,7 +73,7 @@ const App = () => {
     };
     
     checkAuth();
-  }, [])
+  }, [user, isNewUser])
 
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
