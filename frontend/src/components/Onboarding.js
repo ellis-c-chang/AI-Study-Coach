@@ -89,9 +89,8 @@ const Onboarding = ({ user, onComplete }) => {
   const handleSubmit = async () => {
     try {
       await createProfile(profile);
-      setTimeout(() => {
-        onComplete();
-      }, 500);
+      localStorage.setItem('onboardingCompleted', 'true');
+      onComplete();
     } catch (error) {
       console.error("Error creating profile:", error);
       alert("There was an error saving your profile. Please try again.");

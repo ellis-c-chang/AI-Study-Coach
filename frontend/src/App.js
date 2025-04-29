@@ -43,6 +43,14 @@ const App = () => {
       console.log("New user detected, showing onboarding.");
       return;
     }
+    const lastCheckTime = localStorage.getItem('lastProfileCheck');
+    const currentTime = Date.now();
+    // Only check once per minute at most
+    if (lastCheckTime && currentTime - parseInt(lastCheckTime) < 60000) {
+      console.log("Skipping profile check - checked recently");
+      setLoading(false);
+      return;
+    }
     const checkAuth = async () => {
       if (isAuthenticated()) {
           try {
@@ -52,7 +60,7 @@ const App = () => {
             username: tokenData.username
           };
           setUser(userData);
-
+          localStorage.setItem('lastProfileCheck', currentTime.toString());
           const onboardingCompleted = localStorage.getItem('onboardingCompleted') === 'true';
           if (onboardingCompleted) {
             console.log("Onboarding already completed, skipping profile check.");
@@ -65,10 +73,18 @@ const App = () => {
               console.log("Profile found, skipping onboarding");
               setHasProfile(true);
               setShowOnboarding(false);
+              localStorage.setItem('onboardingCompleted', 'true');
             } catch (error) {
-              console.log("No existing profile found, starting onboarding.");
-              setHasProfile(false);
-              setShowOnboarding(true);
+              if (error.response && error.response.status === 404) {
+                console.log("No existing profile found, starting onboarding.");
+                setHasProfile(false);
+                setShowOnboarding(true);
+              } else {
+                // For other errors, assume profile exists to prevent loops
+                console.log("Error checking profile, assuming it exists:", error);
+                setHasProfile(true);
+                setShowOnboarding(false);
+              }
             }
           }
         } catch (error) {
