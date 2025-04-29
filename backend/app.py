@@ -37,7 +37,8 @@ def create_app():
 
     # Initialize database connection
     db.init_app(app)
-    Migrate(app, db)
+    migrations_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'migrations')
+    Migrate(app, db, directory=migrations_dir)
 
     # Enable CORS (Frontend React app can connect)
     @app.after_request
