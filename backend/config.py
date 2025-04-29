@@ -7,8 +7,7 @@ class Config:
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
     FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
-
-     @property
+    @property
     def SQLALCHEMY_DATABASE_URI(self):
         uri = os.getenv('DATABASE_URL')
         if uri and uri.startswith('postgres://'):
