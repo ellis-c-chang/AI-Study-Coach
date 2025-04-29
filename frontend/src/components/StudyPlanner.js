@@ -7,6 +7,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import API from '../services/api';
 import './StudyPlanner.css';
+import { awardSessionPoints } from '../services/gamificationService';
 
 const subjectColors = {
   Math: '#4f46e5',
@@ -155,11 +156,20 @@ const StudyPlanner = ({ user }) => {
   };
 
   const handleCompleteSession = async () => {
-    await completeStudySession(selectedSession.id);
-    setShowModal(false);
-    setSelectedSession(null);
-    setEditSession(null);
-    fetchSessions();
+    try {
+      await completeStudySession(selectedSession.id);
+      
+      // Add this line to award points and trigger achievement checks
+      await awardSessionPoints(selectedSession.id);
+      
+      setShowModal(false);
+      setSelectedSession(null);
+      setEditSession(null);
+      fetchSessions();
+    } catch (err) {
+      console.error('Failed to complete session:', err);
+      alert('Failed to complete the session. Please try again.');
+    }
   };
 
   const handleOutsideClick = (e) => {
