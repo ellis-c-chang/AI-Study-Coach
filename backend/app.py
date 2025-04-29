@@ -1,7 +1,7 @@
 import os
 from flask import Flask, request
 from flask_cors import CORS
-from flask_migrate import Migrate, upgrade
+from flask_migrate import Migrate
 from backend.database import db
 from backend.database import models
 from backend.routes.auth import auth_bp
@@ -37,8 +37,7 @@ def create_app():
 
     # Initialize database connection
     db.init_app(app)
-    migrations_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'migrations')
-    Migrate(app, db, directory=migrations_dir)
+    Migrate(app, db)
 
     # Enable CORS (Frontend React app can connect)
     @app.after_request
@@ -67,8 +66,13 @@ app = create_app()
 
 if __name__ != '__main__':
     with app.app_context():
-        db.create_all()
-        upgrade()
+        try:
+            # Try to create tables directly
+            db.create_all()
+            print("Database tables created successfully")
+        except Exception as e:
+            print(f"Error creating database tables: {e}")
+            # If there's an error, we'll still start the app
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=app.config['DEBUG'], use_reloader=False)
