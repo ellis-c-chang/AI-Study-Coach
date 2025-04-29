@@ -27,9 +27,13 @@ def create_app():
 
     # Load configuration based on environment (development or production)
     if os.getenv('FLASK_ENV') == 'production':
-        app.config.from_object(ProductionConfig)
-    else:
-        app.config.from_object(DevelopmentConfig)
+        with app.app_context():
+            db.create_all()  # Create database tables if they don't exist
+            upgrade()
+    # if os.getenv('FLASK_ENV') == 'production':
+    #     app.config.from_object(ProductionConfig)
+    # else:
+    #     app.config.from_object(DevelopmentConfig)
 
     # Initialize database connection
     db.init_app(app)

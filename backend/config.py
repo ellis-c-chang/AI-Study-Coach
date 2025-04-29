@@ -6,12 +6,18 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
     FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
 
+     @property
+    def SQLALCHEMY_DATABASE_URI(self):
+        uri = os.getenv('DATABASE_URL')
+        if uri and uri.startswith('postgres://'):
+            uri = uri.replace('postgres://', 'postgresql://', 1)
+        return uri
 
 class DevelopmentConfig(Config):
     DEBUG = True
     ENV = 'development'
-
 
 class ProductionConfig(Config):
     DEBUG = False
