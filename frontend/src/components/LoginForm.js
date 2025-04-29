@@ -12,12 +12,14 @@ const LoginForm = ({ setUser }) => {
     try {
       if (isRegistering) {
         await register({ username, email, password });
-        alert('Registration successful!');
-        setIsRegistering(false);
+        const userData = await login({ email, password });
+        setUser({
+          ...userData,
+          isNewUser: true
+        });
       } else {
         const userData = await login({ email, password });
         setUser(userData);
-        alert('Login successful!');
       }
     } catch (err) {
       console.error(err);
