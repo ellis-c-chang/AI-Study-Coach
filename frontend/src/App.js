@@ -52,17 +52,24 @@ const App = () => {
             username: tokenData.username
           };
           setUser(userData);
-          
-          // Check if user has completed onboarding
-          try {
-            await getProfile(tokenData.user_id);
-            console.log("Profile found, skipping onboarding");
-            setHasProfile(true);
+
+          const onboardingCompleted = localStorage.getItem('onboardingCompleted') === 'true';
+          if (onboardingCompleted) {
+            console.log("Onboarding already completed, skipping profile check.");
             setShowOnboarding(false);
-          } catch (error) {
-            console.log("No existing profile found, starting onboarding.");
-            setHasProfile(false);
-            setShowOnboarding(true);
+            setHasProfile(true);
+          } else {
+            // Check if user has completed onboarding
+            try {
+              await getProfile(tokenData.user_id);
+              console.log("Profile found, skipping onboarding");
+              setHasProfile(true);
+              setShowOnboarding(false);
+            } catch (error) {
+              console.log("No existing profile found, starting onboarding.");
+              setHasProfile(false);
+              setShowOnboarding(true);
+            }
           }
         } catch (error) {
           console.error("Error parsing token:", error);
