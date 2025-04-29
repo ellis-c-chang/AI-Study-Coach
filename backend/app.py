@@ -34,13 +34,18 @@ def create_app():
     db.init_app(app)
     Migrate(app, db)
 
-    # ✅ Enable CORS immediately after app is created
-    CORS(app,
-     supports_credentials=True,
-     origins=["http://localhost:3000", "http://127.0.0.1:3000"],
-     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-     allow_headers=["Content-Type", "Authorization"]
+    # Enable CORS immediately after app is created
+    CORS(
+    app,
+    supports_credentials=True,          
+    resources={r"/*": {"origins": [
+        "http://localhost:3000",        # React dev server
+        "http://127.0.0.1:3000"
+    ]}},
+    expose_headers="*",                 
+    allow_headers="*"                   
 )
+
 
 
 
@@ -49,7 +54,7 @@ def create_app():
     app.register_blueprint(sessions_bp, url_prefix='/study_sessions')
     app.register_blueprint(chat_bp, url_prefix='/chat')
     app.register_blueprint(kanban_bp, url_prefix='/tasks')
-    app.register_blueprint(groups_bp, url_prefix='/groups')  # ✅注意：这里明确url_prefix='/groups'
+    app.register_blueprint(groups_bp, url_prefix='/groups')  
 
     # Start background tasks
     start_scheduler(app)

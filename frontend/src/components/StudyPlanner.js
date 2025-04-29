@@ -75,17 +75,20 @@ const StudyPlanner = ({ user }) => {
   };
 
   const handleAddSession = async () => {
-    const duration = (new Date(newSession.end) - new Date(newSession.start)) / 60000;
-    await createStudySession({
-      user_id: user.user_id,
-      subject: newSession.subject,
-      duration,
-      scheduled_time: newSession.start,
-    });
-    setShowModal(false);
-    setNewSession({ subject: '', start: '', end: '' });
-    fetchSessions();
-  };
+  const duration = (new Date(newSession.end) - new Date(newSession.start)) / 60000;
+  const isoStart = new Date(newSession.start).toISOString(); // 转换为后端需要的 ISO 格式
+  await createStudySession({
+    user_id: user.user_id,
+    subject: newSession.subject,
+    duration,
+    scheduled_time: isoStart,
+  });
+
+  setShowModal(false);
+  setNewSession({ subject: '', start: '', end: '' });
+  fetchSessions();
+};
+
 
   const handleUpdateSession = async () => {
   if (!selectedSession.id.startsWith('personal-')) {

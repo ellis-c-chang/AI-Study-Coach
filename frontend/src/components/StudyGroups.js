@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { getMyGroups, joinGroup, createGroup, leaveGroup } from '../services/groupService';
-import { addGroupSession } from '../services/groupService';
-
+import {
+  getMyGroups,
+  joinGroup,
+  createGroup,
+  leaveGroup,
+  addGroupSession,
+  getGroupStudySessions
+} from '../services/groupService';
 
 const StudyGroups = ({ user }) => {
   const [groups, setGroups] = useState([]);
@@ -15,6 +20,7 @@ const StudyGroups = ({ user }) => {
   const [newSessionTime, setNewSessionTime] = useState('');
   const [newSessionDuration, setNewSessionDuration] = useState('');
   const [groupSessions, setGroupSessions] = useState([]);
+
 
 
 
@@ -60,24 +66,31 @@ const StudyGroups = ({ user }) => {
     }
   };
 
+
+
 const handleAddSession = async (groupId) => {
+  if (!newSessionSubject || !newSessionTime || !newSessionDuration) {
+    alert('Please fill in subject / time / duration');
+    return;
+  }
+
+  const isoStart = new Date(newSessionTime).toISOString();
+
   try {
     await addGroupSession(groupId, {
       subject: newSessionSubject,
-      scheduled_time: newSessionTime,
-      duration: Number(newSessionDuration),
+      scheduled_time: isoStart,
+      duration: parseInt(newSessionDuration, 10),
     });
-    alert('Session added successfully');
-    setAddingSessionGroupId(null);
-    setNewSessionSubject('');
-    setNewSessionTime('');
-    setNewSessionDuration('');
-    fetchGroups();  // 刷新一下
-  } catch (error) {
-    console.error('Error adding session:', error);
+    alert('Session added successfully!');
+    /* reset state ... */
+  } catch (err) {
+    console.error('Error adding session:', err);
     alert('Failed to add session. Please try again.');
   }
 };
+
+
 
 
 
