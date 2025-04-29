@@ -156,3 +156,34 @@ def get_group_sessions(group_id):
         })
 
     return jsonify(result)
+
+
+# get a user's every Group Study Sessions
+@groups_bp.route('/all_sessions', methods=['GET'])
+def all_group_sessions():
+    try:
+        user_id = request.args.get('user_id')
+        if not user_id:
+            return jsonify({'error': 'Missing user_id'}), 400
+
+
+        memberships = GroupMembership.query.filter_by(user_id=user_id).all()
+        group_ids = [m.group_id for m in memberships]
+
+
+        sessions = GroupStudySession.query.filter(GroupStudySession.group_id.in_(group_ids)).all()
+
+        result = []
+        for s in sessions:
+            result.append({
+                'id': s.id,
+                'group_id': s.group_id,
+                'subject': s.subject,
+                'scheduled_time': s.scheduled_time,
+                'duration': s.duration,
+            })
+
+        return jsonify(result)
+    except Exception as e:
+        print(f"Error fetching group sessions: {e}")
+        return jsonify({'error': 'Failed to fetch group sessions'}), 500

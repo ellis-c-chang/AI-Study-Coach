@@ -10,6 +10,8 @@ import {
   deleteStudySession,
 } from '../services/sessionService';
 import './StudyPlanner.css';
+import { getMyGroups, getGroupStudySessions } from '../services/groupService';
+
 
 const StudyPlanner = ({ user }) => {
   const [sessions, setSessions] = useState([]);
@@ -20,15 +22,36 @@ const StudyPlanner = ({ user }) => {
   const modalRef = useRef();
 
   const fetchSessions = async () => {
-    const data = await getStudySessions(user.user_id);
-    const events = data.map((s) => ({
-      id: s.id,
+  try {
+    const personalData = await getStudySessions(user.user_id);
+    const personalEvents = personalData.map((s) => ({
+      id: `personal-${s.id}`,
       title: s.subject,
       start: s.scheduled_time,
       end: new Date(new Date(s.scheduled_time).getTime() + s.duration * 60000).toISOString(),
+      color: 'blue', // 个人session显示成蓝色
     }));
-    setSessions(events);
-  };
+
+    const groups = await getMyGroups(user.user_id);
+    let groupEvents = [];
+    for (const group of groups) {
+      const sessions = await getGroupStudySessions(group.group_id);
+      const mapped = sessions.map((s) => ({
+        id: `group-${s.id}`,
+        title: `[${group.name}] ${s.subject}`, // 显示哪来的
+        start: s.scheduled_time,
+        end: new Date(new Date(s.scheduled_time).getTime() + s.duration * 60000).toISOString(),
+        color: 'purple', // 小组session显示成紫色
+      }));
+      groupEvents = groupEvents.concat(mapped);
+    }
+
+    setSessions([...personalEvents, ...groupEvents]);
+  } catch (error) {
+    console.error('Error fetching sessions:', error);
+  }
+};
+
 
   useEffect(() => {
     fetchSessions();

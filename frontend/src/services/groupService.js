@@ -29,3 +29,20 @@ export const leaveGroup = async (user_id, group_id) => {
   });
   return response.data;
 };
+
+export const getGroupStudySessions = async () => {
+  const response = await axios.get(`${BASE_URL}/groups/all_sessions`, {
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+// 添加一个新的 group study session
+export const addGroupSession = async (groupId, sessionData) => {
+  const response = await axios.post(`${BASE_URL}/groups/${groupId}/sessions`, sessionData, {
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+
