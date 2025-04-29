@@ -196,6 +196,36 @@ const StudyPlanner = ({ user }) => {
     }
   };
 
+  const [kanbanTasks, setKanbanTasks] = useState([]);
+  const [statistics, setStatistics] = useState(null);
+
+
+  const fetchKanbanTasks = async () => {
+    try {
+      const res = await API.get(`/tasks/`);
+      const data = res.data.todo; // Only pull 'todo' tasks
+      setKanbanTasks(data);
+    } catch (err) {
+      console.error('Failed to fetch kanban tasks:', err);
+    }
+  };
+
+  const fetchStatistics = async () => {
+    try {
+      const res = await API.get(`/statistics/${user.user_id}`);
+      setStatistics(res.data);
+    } catch (err) {
+      console.error('Failed to fetch statistics:', err);
+    }
+  };
+  
+
+  useEffect(() => {
+    fetchSessions();
+    fetchKanbanTasks(); 
+    fetchStatistics();
+  }, []);
+
   useEffect(() => {
     if (showModal) {
       document.addEventListener('mousedown', handleOutsideClick);
@@ -204,6 +234,8 @@ const StudyPlanner = ({ user }) => {
     }
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, [showModal]);
+
+  
 
   return (
     <div className="flex flex-col md:flex-row w-full h-full p-4 bg-gradient-to-br from-green-100 to-blue-100">
@@ -245,15 +277,28 @@ const StudyPlanner = ({ user }) => {
         <div className="bg-white rounded-lg shadow p-4 mb-6">
           <h3 className="text-lg font-medium">To-Do List</h3>
           <ul className="text-sm mt-2 text-gray-600">
-            <li>📝 Math: review & notes</li>
-            <li>📄 Essay: write and proof</li>
-            <li>🧠 Social: prep for quiz</li>
+            {kanbanTasks.map(task => (
+              <li key={task.id}>📝 {task.title}</li>
+            ))}
           </ul>
+
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <h3 className="text-lg font-medium">Statistics (Coming Soon)</h3>
-          <div className="h-32 flex items-center justify-center text-gray-400">Placeholder</div>
+          <h3 className="text-lg font-medium mb-2">Statistics</h3>
+          {statistics ? (
+            <>
+              <p>✅ Completed Sessions: {statistics.completed_sessions}</p>
+              <p>✅ Completed Tasks: {statistics.completed_tasks}</p>
+              <p>⏳ Total Study Time: {(statistics.total_study_time_minutes / 60).toFixed(1)} hrs</p>
+              <p>🔥 Streak Days: {statistics.streak_days} days</p>
+
+              {/* 如果你想加图表，稍后加 */}
+            </>
+          ) : (
+            <p>Loading statistics...</p>
+          )}
         </div>
+
       </div>
   
       {/* Modal for Add/Edit Session */}

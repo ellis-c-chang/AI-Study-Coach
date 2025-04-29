@@ -63,7 +63,7 @@ class UserProfile(db.Model):
     quiz_responses = db.Column(db.Text)  # Stored as JSON
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     def set_subjects(self, subjects_list):
         self.subjects = json.dumps(subjects_list)
         
@@ -75,3 +75,13 @@ class UserProfile(db.Model):
         
     def get_quiz_responses(self):
         return json.loads(self.quiz_responses) if self.quiz_responses else {}
+
+
+class KanbanTask(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(128), nullable=False)
+    status = db.Column(db.String(32), default='todo')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    
+
