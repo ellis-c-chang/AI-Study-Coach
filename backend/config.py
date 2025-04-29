@@ -1,4 +1,5 @@
 import os
+import re
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'default_secret_key')
@@ -10,7 +11,9 @@ class Config:
     @property
     def SQLALCHEMY_DATABASE_URI(self):
         uri = os.getenv('DATABASE_URL')
-        if uri and uri.startswith('postgres://'):
+        if uri is None:
+            return None
+        if uri.startswith('postgres://'):
             uri = uri.replace('postgres://', 'postgresql://', 1)
         return uri
 
