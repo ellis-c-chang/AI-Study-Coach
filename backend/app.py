@@ -10,6 +10,7 @@ from backend.routes.chat import chat_bp
 from backend.routes.kanban import kanban_bp
 from backend.routes.onboarding import onboarding_bp
 from backend.routes.gamification import gamification_bp  # Import gamification routes
+from backend.routes.gamification import initialize_achievements  # Initialize achievements
 from backend.config import DevelopmentConfig, ProductionConfig  # Centralized config
 from backend.utils.scheduler import start_scheduler  # Background task scheduler
 from dotenv import load_dotenv
