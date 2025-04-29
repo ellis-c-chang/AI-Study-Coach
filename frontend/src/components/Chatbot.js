@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { askAI, extractSchedulePlan } from '../services/chatService';
 import { createStudySession } from '../services/sessionService';
+import ReactMarkdown from 'react-markdown';
+
 
 const Chatbot = ({ user }) => {
   const [message, setMessage] = useState('');
@@ -111,19 +113,39 @@ const Chatbot = ({ user }) => {
   }, [chatLog]);
 
   return (
-    <div className="flex flex-col w-full bg-gradient-to-br from-blue-100 to-green-100 p-6 rounded-lg shadow-md">
+    <div className="flex flex-col w-full h-[80vh] bg-gradient-to-br from-blue-100 to-green-100 p-6 rounded-lg shadow-md font-sans text-gray-800 text-base leading-relaxed">
       <h2 className="text-2xl font-semibold text-gray-800 text-center mb-4">AI Chat Assistant</h2>
-      <div className="flex-1 overflow-y-auto bg-white rounded-md shadow-inner p-r space-y-4 mb-4">
-        {chatLog.map((msg, index) => (
-          <div key={index} className={`p-3 rounded-lg max-w-[75%] ${msg.sender === 'user' ? 'bg-blue-200 self-end text-right ml-auto' : 'bg-green-200 self-start text-left'}`}>
-            <span className="block text-sm text-gray-600 mb-1">
-              {msg.sender === 'user' ? 'You' : 'AI'}
-            </span>
-            <span className="text-gray-900 whitespace-pre-line">{msg.text}</span>
-          </div>
-        ))}
-        <div ref={chatEndRef} />
+      
+      <div className="flex-1 overflow-y-auto bg-white rounded-md shadow-inner pr-4 space-y-4 mb-4">
+  {chatLog.map((msg, index) => (
+    <div key={index} className={`w-full flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+      <div
+        className={`inline-block p-3 rounded-lg max-w-[75%] min-w-[50px] break-words ${
+          msg.sender === 'user'
+            ? 'bg-blue-200 text-right'
+            : 'bg-green-200 text-left'
+        }`}
+      >
+        <span className="block text-sm text-gray-600 mb-1">
+          {msg.sender === 'user' ? 'You' : 'Coach'}
+        </span>
+        <ReactMarkdown
+          components={{
+            p: ({ node, ...props }) => (
+              <p className="text-gray-900 whitespace-pre-line" {...props} />
+            ),
+          }}
+        >
+          {msg.text}
+        </ReactMarkdown>
       </div>
+    </div>
+  ))}
+  <div ref={chatEndRef} />
+</div>
+
+  
+      {/* 输入框区域 */}
       <form onSubmit={handleSubmit} className="flex items-center gap-3">
         <input
           type="text"
@@ -132,12 +154,16 @@ const Chatbot = ({ user }) => {
           onChange={(e) => setMessage(e.target.value)}
           className="flex-1 p-3 rounded-md border shadow-sm outline-none focus:ring-2 focus:ring-blue-400"
         />
-        <button type="submit" className="px-5 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">
+        <button
+          type="submit"
+          className="px-5 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+        >
           Send
         </button>
       </form>
     </div>
   );
+  
 };
 
 export default Chatbot;
