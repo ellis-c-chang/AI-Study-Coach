@@ -29,6 +29,13 @@ const Sidebar = ({ setSelectedTab }) => {
         >
           📌 To-Do List
         </li>
+        {/* 🆕 新加一项 Study Groups */}
+        <li 
+          onClick={() => setSelectedTab('studyGroups')} 
+          className="cursor-pointer hover:bg-gray-700 p-2 rounded"
+        >
+          👥 Study Groups
+        </li>
       </ul>
     </div>
   );

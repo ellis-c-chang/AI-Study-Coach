@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { BrowserRouter } from 'react-router-dom';
 import LoginForm from './components/LoginForm';
 import Chatbot from './components/Chatbot';
 import StudyPlanner from './components/StudyPlanner';
 import Sidebar from './components/Sidebar';
 import FocusTracker from './components/FocusTracker';
-import KanbanBoard from './components/KanbanBoard'; // ✅ Import KanbanBoard
+import KanbanBoard from './components/KanbanBoard';
+import StudyGroups from './components/StudyGroups'; // 🆕 加这一行！导入StudyGroups组件
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -32,7 +34,8 @@ const App = () => {
             {selectedTab === 'chatbot' && <Chatbot user={user} />}
             {selectedTab === 'studyPlanner' && <StudyPlanner user={user} />}
             {selectedTab === 'focusTracker' && <FocusTracker user={user} />}
-            {selectedTab === 'kanban' && <KanbanBoard />} {/* ✅ Add Kanban Board */}
+            {selectedTab === 'kanban' && <KanbanBoard />}
+            {selectedTab === 'studyGroups' && <StudyGroups user={user} />}
           </div>
         </div>
       )}
