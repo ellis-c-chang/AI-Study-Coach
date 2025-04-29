@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'https://ai-study-coach.onrender.com' || process.env.REACT_APP_API_URL,  // Flask backend URL
+  baseURL: 'https://ai-study-coach.onrender.com',  // Flask backend URL
   withCredentials: true,  // For handling cookies if needed later
   headers: {
     'Content-Type': 'application/json'  

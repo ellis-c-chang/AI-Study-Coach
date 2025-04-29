@@ -26,10 +26,6 @@ def create_app():
     app = Flask(__name__)
 
     # Load configuration based on environment (development or production)
-    # if os.getenv('FLASK_ENV') == 'production':
-    #     with app.app_context():
-    #         db.create_all()  # Create database tables if they don't exist
-    #         upgrade()
     if os.getenv('FLASK_ENV') == 'production':
         app.config.from_object(ProductionConfig)
     else:
@@ -42,6 +38,20 @@ def create_app():
     # Enable CORS (Frontend React app can connect)
     @app.after_request
     def after_request(response):
+        if 'Access-Control-Allow-Origin' not in response.headers:
+            response.headers.add('Access-Control-Allow-Origin', 'https://ai-study-coach.vercel.app')
+            response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+            response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+            response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
+    
+    # Special handler for OPTIONS requests (preflight)
+    @app.route('/', defaults={'path': ''}, methods=['OPTIONS'])
+    @app.route('/<path:path>', methods=['OPTIONS'])
+    def handle_options(path):
+        response = app.response_class(
+            status=200
+        )
         response.headers.add('Access-Control-Allow-Origin', 'https://ai-study-coach.vercel.app')
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
         response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
