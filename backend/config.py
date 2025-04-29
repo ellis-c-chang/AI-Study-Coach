@@ -8,8 +8,8 @@ class Config:
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
     FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
-    @property
-    def SQLALCHEMY_DATABASE_URI(self):
+    @staticmethod
+    def get_database_url():
         uri = os.getenv('DATABASE_URL')
         if uri is None:
             return None
@@ -20,7 +20,16 @@ class Config:
 class DevelopmentConfig(Config):
     DEBUG = True
     ENV = 'development'
+    # Fallback local database if DATABASE_URL is not provided
+    SQLALCHEMY_DATABASE_URI = Config.get_database_url() or 'postgresql://postgres:password@localhost:5432/studyapp'
+
 
 class ProductionConfig(Config):
     DEBUG = False
     ENV = 'production'
+    # Get the database URL with proper format
+    SQLALCHEMY_DATABASE_URI = Config.get_database_url()
+    
+    # Add SSL mode if needed for Render
+    if SQLALCHEMY_DATABASE_URI and 'render.com' in SQLALCHEMY_DATABASE_URI and '?' not in SQLALCHEMY_DATABASE_URI:
+        SQLALCHEMY_DATABASE_URI += '?sslmode=require'

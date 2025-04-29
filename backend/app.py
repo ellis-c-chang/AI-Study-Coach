@@ -26,14 +26,14 @@ def create_app():
     app = Flask(__name__)
 
     # Load configuration based on environment (development or production)
-    if os.getenv('FLASK_ENV') == 'production':
-        with app.app_context():
-            db.create_all()  # Create database tables if they don't exist
-            upgrade()
     # if os.getenv('FLASK_ENV') == 'production':
-    #     app.config.from_object(ProductionConfig)
-    # else:
-    #     app.config.from_object(DevelopmentConfig)
+    #     with app.app_context():
+    #         db.create_all()  # Create database tables if they don't exist
+    #         upgrade()
+    if os.getenv('FLASK_ENV') == 'production':
+        app.config.from_object(ProductionConfig)
+    else:
+        app.config.from_object(DevelopmentConfig)
 
     # Initialize database connection
     db.init_app(app)
@@ -61,4 +61,7 @@ app = create_app()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=app.config['DEBUG'], use_reloader=False)
+    with app.app_context():
+        db.create_all()
+        upgrade()
 
