@@ -1,3 +1,4 @@
+// frontend/src/components/Sidebar.js
 import React from 'react';
 import { logout } from '../services/authService';
 
@@ -10,6 +11,7 @@ const Sidebar = ({ setSelectedTab, handleLogout }) => {
   return (
     <div className="w-64 bg-gray-900 text-white p-6 min-h-screen">
       <h2 className="text-2xl font-bold mb-6">📚 Study Dashboard</h2>
+
       <ul className="space-y-4">
         <li
           onClick={() => setSelectedTab('chatbot')}
@@ -39,7 +41,6 @@ const Sidebar = ({ setSelectedTab, handleLogout }) => {
           📌 To-Do List
         </li>
 
-        {/* ✅ 修复：补全 closing tag */}
         <li
           onClick={() => setSelectedTab('studyGroups')}
           className="cursor-pointer hover:bg-gray-700 p-2 rounded"
@@ -61,7 +62,8 @@ const Sidebar = ({ setSelectedTab, handleLogout }) => {
           👤 My Profile
         </li>
 
-        <div className="border-t border-gray-700 my-4"></div>
+        {/* 分隔线 */}
+        <div className="border-t border-gray-700 my-4" />
 
         <li
           onClick={onLogout}

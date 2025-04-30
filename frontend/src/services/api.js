@@ -1,42 +1,45 @@
+// frontend/src/services/api.js
 import axios from 'axios';
 
-cconst API = axios.create({
+/**
+ * 说明
+ * ──────────────────────────────────────────
+ * 1. 本地开发   → 默认走 http://127.0.0.1:5000
+ * 2. 线上部署   → 在 Vercel (或其它平台) 的环境变量里配置
+ *                REACT_APP_API_URL=https://ai-study-coach.onrender.com
+ *    CRA 会在构建时把 REACT_APP_ 前缀的变量注入到前端代码里。
+ */
+const API = axios.create({
   baseURL:
-    process.env.REACT_APP_API_URL   // ← 生产环境用 Vercel 注入的变量
-    || 'http://127.0.0.1:5000',     // ← 本地开发 fallback
+    process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000',
   withCredentials: true,
+  headers: { 'Content-Type': 'application/json' }
 });
 
-// Add interceptors to handle token
-API.interceptors.request.use(config => {
+/* ────────── token 注入 ────────── */
+API.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-API.interceptors.response.use(null, async (error) => {
-  // If the error is a resource error, delay and retry once
-  if (error.message === 'Network Error' || 
-      error.code === 'ERR_INSUFFICIENT_RESOURCES') {
-    
-    console.log('Resource error detected, waiting before retry...');
-    // Wait 2 seconds
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Get the original request configuration
-    const originalRequest = error.config;
-    
-    // Only retry once
-    if (!originalRequest._retry) {
-      originalRequest._retry = true;
-      console.log('Retrying request...');
-      return API(originalRequest);
+/* ────────── 网络错误自动重试一次 ────────── */
+API.interceptors.response.use(
+  (res) => res,
+  async (error) => {
+    const { message, code, config } = error;
+
+    const isResourceErr =
+      message === 'Network Error' || code === 'ERR_INSUFFICIENT_RESOURCES';
+
+    if (isResourceErr && !config._retry) {
+      console.warn('[API] network issue, retrying once…');
+      await new Promise((r) => setTimeout(r, 2000)); // 等 2 秒
+      config._retry = true;
+      return API(config);
     }
+    return Promise.reject(error);
   }
-  
-  return Promise.reject(error);
-});
+);
 
 export default API;
