@@ -1,7 +1,9 @@
 import os
-from flask import Flask, request
+from flask import Flask
 from flask_cors import CORS
 from flask_migrate import Migrate
+from dotenv import load_dotenv
+
 from backend.database import db
 from backend.database import models
 from backend.routes.auth import auth_bp
@@ -13,50 +15,31 @@ from backend.routes.gamification import gamification_bp
 from backend.routes.gamification import initialize_achievements
 from backend.config import DevelopmentConfig, ProductionConfig
 from backend.utils.scheduler import start_scheduler
-from dotenv import load_dotenv
 
-# Load environment variables from .env
+# Load environment variables
 load_dotenv()
 
-# Verify OpenAI API Key
-openai_api_key = os.getenv('OPENAI_API_KEY')
-if not openai_api_key:
+# Ensure OpenAI API key is set
+if not os.getenv('OPENAI_API_KEY'):
     raise ValueError("OpenAI API Key is missing. Please check your .env file.")
 
 def create_app():
     app = Flask(__name__)
 
-    # Load config based on environment
+    # Load appropriate config
     if os.getenv('FLASK_ENV') == 'production':
         app.config.from_object(ProductionConfig)
     else:
         app.config.from_object(DevelopmentConfig)
 
-    # Initialize database
+    # Initialize DB
     db.init_app(app)
     Migrate(app, db)
 
-    # Enable CORS for frontend
-    @app.after_request
-    def after_request(response):
-        response.headers.add('Access-Control-Allow-Origin', 'https://ai-study-coach.vercel.app')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
-        return response
+    # ✅ Proper CORS (let frontend call backend)
+    CORS(app, origins=["https://ai-study-coach.vercel.app"], supports_credentials=True)
 
-    # Preflight OPTIONS support
-    @app.route('/', defaults={'path': ''}, methods=['OPTIONS'])
-    @app.route('/<path:path>', methods=['OPTIONS'])
-    def handle_options(path):
-        response = app.response_class(status=200)
-        response.headers.add('Access-Control-Allow-Origin', 'https://ai-study-coach.vercel.app')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
-        return response
-
-    # Register route blueprints
+    # Register blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(sessions_bp, url_prefix='/study_sessions')
     app.register_blueprint(chat_bp, url_prefix='/chat')
@@ -64,25 +47,25 @@ def create_app():
     app.register_blueprint(gamification_bp, url_prefix='/gamification')
     app.register_blueprint(onboarding_bp, url_prefix='/onboarding')
 
-    # Start scheduled background jobs (e.g., reminders)
+    # Background scheduler
     start_scheduler(app)
 
     return app
 
-# Initialize Flask app
+# Create app instance
 app = create_app()
 
-# For WSGI (e.g., Render or gunicorn)
+# For Render / WSGI
 if __name__ != '__main__':
     with app.app_context():
         try:
             db.create_all()
-            print("Database tables created successfully")
+            print("✅ Database tables created successfully")
         except Exception as e:
-            print(f"Error creating database tables: {e}")
+            print(f"❌ Error creating database tables: {e}")
 
-# For local development
+# Local dev (manual run)
 if __name__ == '__main__':
     with app.app_context():
-        initialize_achievements()  # ✅ Now safe: this only runs after tables are created
+        initialize_achievements()
     app.run(host='0.0.0.0', port=5000, debug=app.config['DEBUG'], use_reloader=False)
