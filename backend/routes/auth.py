@@ -69,12 +69,9 @@ def login():
             
             return jsonify({
                 'message': 'Login successful!',
-                'token': token,
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'email': user.email
-                }
+                'user_id': user.id,
+                'username': user.username,
+                'token': token
             }), 200
         else:
             return handle_error('Invalid email or password', 401)
