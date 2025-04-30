@@ -43,7 +43,7 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(sessions_bp, url_prefix='/study_sessions')
     app.register_blueprint(chat_bp, url_prefix='/chat')
-    app.register_blueprint(kanban_bp, url_prefix='/kanban')
+    app.register_blueprint(kanban_bp)
     app.register_blueprint(gamification_bp, url_prefix='/gamification')
     app.register_blueprint(onboarding_bp, url_prefix='/onboarding')
 
