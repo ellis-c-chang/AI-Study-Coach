@@ -153,21 +153,46 @@ const KanbanBoard = () => {
     if (fromStatus === toStatus) return;
     
     try {
+      // Convert taskId to number if it's a string
+      const numericTaskId = typeof taskId === 'string' ? parseInt(taskId, 10) : taskId;
+      
       // Find the task to move
-      const taskToMove = tasks[fromStatus]?.find(task => task.id === taskId);
-      if (!taskToMove) return;
+      const taskToMove = tasks[fromStatus]?.find(task => {
+        // Compare as numbers to avoid string/number mismatches
+        return task.id === numericTaskId || task.id === taskId;
+      });
+      
+      if (!taskToMove) {
+        console.error(`Task not found: ID ${taskId} in ${fromStatus}`);
+        return;
+      }
       
       // Make a copy of the task with the new status
       const updatedTask = { ...taskToMove, status: toStatus };
       
       // Update task status in backend
-      await updateTask(taskId, { status: toStatus });
+      await updateTask(numericTaskId, { status: toStatus });
       
-      // Update local state
+      // Update local state safely
       setTasks(prev => {
-        const newState = { ...prev };
-        newState[fromStatus] = newState[fromStatus].filter(task => task.id !== taskId);
-        newState[toStatus] = [...newState[toStatus], updatedTask];
+        // Create a deep copy of the previous state
+        const newState = JSON.parse(JSON.stringify(prev));
+        
+        // Remove from old status array
+        if (Array.isArray(newState[fromStatus])) {
+          newState[fromStatus] = newState[fromStatus].filter(t => 
+            t.id !== numericTaskId && t.id !== taskId
+          );
+        }
+        
+        // Add to new status array
+        if (Array.isArray(newState[toStatus])) {
+          newState[toStatus] = [...newState[toStatus], updatedTask];
+        } else {
+          // Initialize the array if it doesn't exist
+          newState[toStatus] = [updatedTask];
+        }
+        
         return newState;
       });
     } catch (error) {
