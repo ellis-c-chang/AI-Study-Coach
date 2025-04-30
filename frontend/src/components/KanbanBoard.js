@@ -91,7 +91,21 @@ const KanbanBoard = () => {
       setLoading(true);
       try {
         const data = await getTasks();
-        setTasks(data);
+        // Group tasks by status
+        const groupedTasks = {
+          todo: [],
+          inProgress: [],
+          done: []
+        };
+        data.forEach(task => {
+          if (groupedTasks[task.status]) {
+            groupedTasks[task.status].push(task);
+          } else {
+            // Default to todo if status is invalid
+            groupedTasks.todo.push({...task, status: 'todo'});
+          }
+        });
+        setTasks(groupedTasks);
       } catch (error) {
         console.error('Error fetching tasks:', error);
         setError('Failed to load tasks. Please try again later.');
@@ -110,6 +124,7 @@ const KanbanBoard = () => {
   
     if (!userId) {
       console.error("User ID not found in localStorage");
+      setError("User ID not found. Please log in again.");
       return;
     }
   
@@ -120,7 +135,7 @@ const KanbanBoard = () => {
         user_id: parseInt(userId)  // 确保是整数
       });
   
-      setTasks((prev) => ({
+      setTasks(prev => ({
         ...prev,
         todo: [...prev.todo, addedTask]
       }));
@@ -128,6 +143,7 @@ const KanbanBoard = () => {
       setNewTask('');
     } catch (error) {
       console.error('Error adding task:', error);
+      setError('Failed to add task. Please try again.');
     }
   };
   
