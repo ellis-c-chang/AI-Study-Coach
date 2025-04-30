@@ -36,18 +36,8 @@ def create_app():
     db.init_app(app)
     Migrate(app, db)
 
-    # Enable CORS for both local and Vercel frontend
-    CORS(
-        app,
-        supports_credentials=True,
-        origins=[
-            "http://localhost:3000",
-            "http://127.0.0.1:3000",
-            "https://ai-study-coach.vercel.app"
-        ],
-        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allow_headers=["Content-Type", "Authorization"]
-    )
+    # ✅ Proper CORS (let frontend call backend)
+    CORS(app, origins=["https://ai-study-coach.vercel.app", "https://ai-study-coach.onrender.com"], supports_credentials=True)
 
     # Register Blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')
