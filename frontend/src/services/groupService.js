@@ -30,3 +30,14 @@ export const leaveGroup = async (user_id, group_id) => {
   });
   return response.data;
 };
+
+
+export const addGroupSession = async (groupId, sessionData) => {
+  const { data } = await API.post(`/groups/${groupId}/sessions`, sessionData);
+  return data;
+};
+
+export const getGroupStudySessions = async (groupId) => {
+  const { data } = await API.get(`/groups/${groupId}/sessions`);
+  return data;
+};
