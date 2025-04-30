@@ -5,7 +5,7 @@ import {
   createGroup,
   leaveGroup,
   addGroupSession,
-  getGroupMembers  
+  getGroupMembers,
   getGroupStudySessions
 } from '../services/groupService';
 
