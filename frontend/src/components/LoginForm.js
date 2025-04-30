@@ -7,7 +7,7 @@ const LoginForm = ({ setUser }) => {
   const [username, setUsername] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
 
-  const handleSubmit = async (e) => {
+  /*const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (isRegistering) {
@@ -23,6 +23,26 @@ const LoginForm = ({ setUser }) => {
         const userData = await login({ email, password });
   
         localStorage.setItem("user_id", userData.user.id); // ✅ 添加这一行
+        setUser(userData);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Authentication failed, please check your credentials.');
+    }
+  };*/
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (isRegistering) {
+        await register({ username, email, password });
+        const userData = await login({ email, password });
+        setUser({
+          ...userData,
+          isNewUser: true
+        });
+      } else {
+        const userData = await login({ email, password });
         setUser(userData);
       }
     } catch (err) {
