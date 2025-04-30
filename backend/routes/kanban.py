@@ -2,7 +2,8 @@ from flask import Blueprint, request, jsonify
 from backend.database.models import Task, db
 from datetime import datetime
 
-kanban_bp = Blueprint('kanban', __name__)
+kanban_bp = Blueprint('kanban', __name__, url_prefix='/kanban')
+
 
 @kanban_bp.route('/', methods=['POST'])
 def add_task():
