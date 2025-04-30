@@ -57,3 +57,20 @@ def get_all_tasks():
             'created_at': t.created_at.isoformat()
         } for t in tasks
     ]), 200
+
+@kanban_bp.route('/<int:task_id>', methods=['PUT'])
+def update_task(task_id):
+    task = Task.query.get(task_id)
+    if task:
+        data = request.get_json()
+        for key, value in data.items():
+            setattr(task, key, value)
+        db.session.commit()
+        return jsonify({
+            'id': task.id,
+            'title': task.title,
+            'status': task.status,
+            'user_id': task.user_id,
+            'created_at': task.created_at.isoformat()
+        }), 200
+    return jsonify({'error': 'Task not found'}), 404
