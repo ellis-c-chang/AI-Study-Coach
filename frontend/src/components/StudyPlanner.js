@@ -35,6 +35,18 @@ const StudyPlanner = ({ user }) => {
   const [editSession, setEditSession] = useState(null);
   const [newSession, setNewSession] = useState({ subject: '', start: '', end: '' });
   const modalRef = useRef();
+  const [todoTasks, setTodoTasks] = useState([]);
+
+  const fetchTodoTasks = async () => {
+    try {
+      const res = await API.get(`/kanban/user/${user.user_id}`);
+      setTodoTasks(res.data.filter(t => t.status !== 'done')); // 只要未完成的任务
+    } catch (err) {
+      console.error("Failed to fetch Kanban tasks:", err);
+    }
+  };
+  
+
 
   const fetchSessions = async () => {
     try {
@@ -60,6 +72,7 @@ const StudyPlanner = ({ user }) => {
 
   useEffect(() => {
     fetchSessions();
+    fetchTodoTasks();
   }, []);
 
   const handleDateClick = (arg) => {
@@ -166,6 +179,7 @@ const StudyPlanner = ({ user }) => {
       setSelectedSession(null);
       setEditSession(null);
       fetchSessions();
+      fetchTodoTasks();
     } catch (err) {
       console.error('Failed to complete session:', err);
       alert('Failed to complete the session. Please try again.');
@@ -254,10 +268,14 @@ const StudyPlanner = ({ user }) => {
       <div className="w-full md:w-1/4 p-4">
         <div className="bg-white rounded-lg shadow p-4 mb-6">
           <h3 className="text-lg font-medium">To-Do List</h3>
-          <ul className="text-sm mt-2 text-gray-600">
-            <li>📝 Math: review & notes</li>
-            <li>📄 Essay: write and proof</li>
-            <li>🧠 Social: prep for quiz</li>
+          <ul className="text-sm mt-2 text-gray-600 space-y-1">
+            {todoTasks.length === 0 ? (
+              <li className="italic text-gray-400">No tasks yet.</li>
+            ) : (
+              todoTasks.map(task => (
+                <li key={task.id}>📌 {task.title}</li>
+              ))
+            )}
           </ul>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
