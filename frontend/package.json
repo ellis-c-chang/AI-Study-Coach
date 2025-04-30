@@ -12,12 +12,21 @@
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.9",
+    "chart.js": "^4.4.9",
     "date-fns": "^4.1.0",
     "react": "^19.0.0",
     "react-big-calendar": "^1.18.0",
     "react-calendar": "^5.1.0",
+    "react-chartjs-2": "^5.3.0",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^19.0.0",
+<<<<<<< HEAD
     "react-router-dom": "^7.5.3",
+=======
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.2.0",
+>>>>>>> 6de997339934b9eacda0f05db8ea73769bbc52a5
     "react-scripts": "^5.0.1",
     "web-vitals": "^2.1.4"
   },
@@ -52,5 +61,6 @@
   },
   "resolutions": {
     "tailwindcss": "^4.0.8"
-  }
+  },
+  "proxy": "http://localhost:5000"
 }
