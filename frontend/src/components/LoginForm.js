@@ -13,14 +13,24 @@ const LoginForm = ({ setUser }) => {
       if (isRegistering) {
         await register({ username, email, password });
         const userData = await login({ email, password });
-        localStorage.setItem("user_id", userData.user.id); // ✅ 添加这一行
+        // Store user ID properly based on the actual response structure
+        if (userData && userData.user_id) {
+          localStorage.setItem("user_id", userData.user_id);
+        } else if (userData && userData.id) {
+          localStorage.setItem("user_id", userData.id);
+        }
         setUser({
           ...userData,
           isNewUser: true
         });
       } else {
         const userData = await login({ email, password });
-        localStorage.setItem("user_id", userData.user.id); // ✅ 添加这一行
+        // Store user ID properly based on the actual response structure
+        if (userData && userData.user_id) {
+          localStorage.setItem("user_id", userData.user_id);
+        } else if (userData && userData.id) {
+          localStorage.setItem("user_id", userData.id);
+        }
         setUser(userData);
       }
     } catch (err) {
