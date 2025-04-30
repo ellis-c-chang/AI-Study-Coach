@@ -43,6 +43,6 @@ export const getGroupStudySessions = async (groupId) => {
 };
 
 export const getGroupMembers = async (groupId) => {
-  const { data } = await API.get(`/groups/${groupId}/members`);
-  return data;
+  const response = await axios.get(`${API_BASE_URL}/groups/${groupId}/members`);
+  return response.data;
 };
