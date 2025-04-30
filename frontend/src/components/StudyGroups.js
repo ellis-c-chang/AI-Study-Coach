@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { getMyGroups, joinGroup, createGroup, leaveGroup } from '../services/groupService';
+import {
+  getMyGroups,
+  joinGroup,
+  createGroup,
+  leaveGroup,
+  addGroupSession,
+  getGroupStudySessions
+} from '../services/groupService';
 
 const StudyGroups = ({ user }) => {
   const [groups, setGroups] = useState([]);
@@ -8,6 +15,14 @@ const StudyGroups = ({ user }) => {
   const [newGroupDescription, setNewGroupDescription] = useState('');
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [groupMembers, setGroupMembers] = useState([]);
+  const [addingSessionGroupId, setAddingSessionGroupId] = useState(null);
+  const [newSessionSubject, setNewSessionSubject] = useState('');
+  const [newSessionTime, setNewSessionTime] = useState('');
+  const [newSessionDuration, setNewSessionDuration] = useState('');
+  const [groupSessions, setGroupSessions] = useState([]);
+
+
+
 
   useEffect(() => {
     if (user) {
@@ -51,6 +66,34 @@ const StudyGroups = ({ user }) => {
     }
   };
 
+
+
+const handleAddSession = async (groupId) => {
+  if (!newSessionSubject || !newSessionTime || !newSessionDuration) {
+    alert('Please fill in subject / time / duration');
+    return;
+  }
+
+  const isoStart = new Date(newSessionTime).toISOString();
+
+  try {
+    await addGroupSession(groupId, {
+      subject: newSessionSubject,
+      scheduled_time: isoStart,
+      duration: parseInt(newSessionDuration, 10),
+    });
+    alert('Session added successfully!');
+    /* reset state ... */
+  } catch (err) {
+    console.error('Error adding session:', err);
+    alert('Failed to add session. Please try again.');
+  }
+};
+
+
+
+
+
   const handleLeave = async (groupId) => {
     try {
       await leaveGroup(user.user_id, groupId);
@@ -66,19 +109,27 @@ const StudyGroups = ({ user }) => {
   const handleViewGroup = async (group) => {
   setSelectedGroup(group);
   try {
-    const res = await fetch(`http://127.0.0.1:5000/groups/${group.group_id}/members`, {
-      credentials: 'include', // 保持cookies session，如果需要
-    });
-    if (!res.ok) {
-      throw new Error('Failed to fetch members');
+    const [membersRes, sessionsRes] = await Promise.all([
+      fetch(`http://127.0.0.1:5000/groups/${group.group_id}/members`, { credentials: 'include' }),
+      fetch(`http://127.0.0.1:5000/groups/${group.group_id}/sessions`, { credentials: 'include' })
+    ]);
+
+    if (!membersRes.ok || !sessionsRes.ok) {
+      throw new Error('Failed to fetch group data');
     }
-    const data = await res.json();
-    setGroupMembers(data);
+
+    const membersData = await membersRes.json();
+    const sessionsData = await sessionsRes.json();
+
+    setGroupMembers(membersData);
+    setGroupSessions(sessionsData);
   } catch (error) {
-    console.error('Error fetching group members:', error);
+    console.error('Error fetching group detail:', error);
     setGroupMembers([]);
+    setGroupSessions([]);
   }
 };
+
 
 
   return (
@@ -146,6 +197,20 @@ const StudyGroups = ({ user }) => {
             )}
           </ul>
 
+          <h4 className="text-lg font-semibold mt-6 mb-2">Group Study Sessions:</h4>
+          <ul className="list-disc list-inside text-gray-700 mb-6">
+            {groupSessions.length > 0 ? (
+              groupSessions.map((session) => (
+                <li key={session.id}>
+                  {session.subject} — {new Date(session.scheduled_time).toLocaleString()} ({session.duration} min)
+                </li>
+        ))
+    ) : (
+            <li>No study sessions scheduled.</li>
+  )}
+          </ul>
+
+
           <button
             onClick={() => setSelectedGroup(null)}
             className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
@@ -154,7 +219,7 @@ const StudyGroups = ({ user }) => {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 gap-y-8">
           {groups.map((group) => (
             <div key={group.group_id} className="bg-white shadow p-4 rounded-lg flex flex-col">
               <h4 className="text-lg font-semibold">{group.name}</h4>
@@ -175,6 +240,52 @@ const StudyGroups = ({ user }) => {
                   Leave
                 </button>
               </div>
+              {addingSessionGroupId === group.group_id ? (
+  <div className="mt-4 space-y-2">
+    <input
+      type="text"
+      placeholder="Session Subject"
+      className="w-full border p-2 rounded"
+      value={newSessionSubject}
+      onChange={(e) => setNewSessionSubject(e.target.value)}
+    />
+    <input
+      type="datetime-local"
+      className="w-full border p-2 rounded"
+      value={newSessionTime}
+      onChange={(e) => setNewSessionTime(e.target.value)}
+    />
+    <input
+      type="number"
+      placeholder="Duration (minutes)"
+      className="w-full border p-2 rounded"
+      value={newSessionDuration}
+      onChange={(e) => setNewSessionDuration(e.target.value)}
+    />
+    <div className="flex gap-2">
+      <button
+        onClick={() => handleAddSession(group.group_id)}
+        className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 flex-1"
+      >
+        Save
+      </button>
+      <button
+        onClick={() => setAddingSessionGroupId(null)}
+        className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500 flex-1"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+) : (
+  <button
+    onClick={() => setAddingSessionGroupId(group.group_id)}
+    className="bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600 mt-2"
+  >
+    Add Session
+  </button>
+)}
+
             </div>
           ))}
         </div>
