@@ -13,12 +13,16 @@ const LoginForm = ({ setUser }) => {
       if (isRegistering) {
         await register({ username, email, password });
         const userData = await login({ email, password });
+  
+        localStorage.setItem("user_id", userData.user.id); // ✅ 添加这一行
         setUser({
           ...userData,
           isNewUser: true
         });
       } else {
         const userData = await login({ email, password });
+  
+        localStorage.setItem("user_id", userData.user.id); // ✅ 添加这一行
         setUser(userData);
       }
     } catch (err) {
@@ -26,6 +30,7 @@ const LoginForm = ({ setUser }) => {
       alert('Authentication failed, please check your credentials.');
     }
   };
+  
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-blue-100 to-green-100">
