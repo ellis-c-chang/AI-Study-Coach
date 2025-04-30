@@ -42,10 +42,16 @@ const Chatbot = ({ user }) => {
         duration: s.duration,
       });
     }
-    setChatLog((prev) => [...prev, { sender: 'ai', text: 'Schedule added to your calendar! You can check it in the Study Planner tab.' }]);
+    setChatLog((prev) => [
+      ...prev,
+      { sender: 'ai', text: 'Schedule added to your calendar! You can check it in the Study Planner tab.' },
+    ]);
     setPendingPlan(null);
     setIsAwaitingConfirmation(false);
-  } else if (
+    return;
+  }
+
+  if (
     msgLower.includes('cancel') ||
     msgLower.includes('nevermind') ||
     msgLower.includes("don't need") ||
@@ -54,14 +60,38 @@ const Chatbot = ({ user }) => {
     setChatLog((prev) => [...prev, { sender: 'ai', text: 'Got it. The schedule has been discarded.' }]);
     setPendingPlan(null);
     setIsAwaitingConfirmation(false);
+    return;
+  }
+
+  const contextMessage = `The current schedule is for "${pendingPlan.subject}" with sessions:\n` +
+  pendingPlan.sessions.map(s => `${s.date} at ${s.start} for ${s.duration} mins`).join('\n') +
+  `.\nThe user said: "${message}". Please generate a new full plan.`;
+
+  const aiReply = await extractSchedulePlan(contextMessage);
+
+
+  if (aiReply && aiReply.sessions) {
+    const planText = `Based on your input, I updated the study plan for "${aiReply.subject || 'Study'}":\n` +
+      aiReply.sessions.map(s => `• ${s.date} ${s.start} – ${s.duration} mins: ${aiReply.subject}`).join('\n');
+
+    setPendingPlan(aiReply);
+    setChatLog((prev) => [
+      ...prev,
+      { sender: 'ai', text: planText },
+      {
+        sender: 'ai',
+        text: "Let me know if you'd like to modify anything, or type 'confirm' to add this schedule to your calendar. Or type 'cancel' to discard it.",
+      },
+    ]);
   } else {
-      setChatLog((prev) => [...prev, {
+    setChatLog((prev) => [...prev, {
       sender: 'ai',
-      text: "Let me know if you'd like to modify anything, or type 'confirm' to add this schedule to your calendar. Or type 'cancel' to discard it.",
+      text: "Sorry, I couldn't update the plan based on that. Could you rephrase?",
     }]);
   }
   return;
 }
+
 
 
     const lower = message.toLowerCase();
