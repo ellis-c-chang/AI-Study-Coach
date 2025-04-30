@@ -21,12 +21,8 @@
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^19.0.0",
-<<<<<<< HEAD
-    "react-router-dom": "^7.5.3",
-=======
     "react-markdown": "^10.1.0",
-    "react-router-dom": "^7.2.0",
->>>>>>> 6de997339934b9eacda0f05db8ea73769bbc52a5
+    "react-router-dom": "^7.5.3",
     "react-scripts": "^5.0.1",
     "web-vitals": "^2.1.4"
   },
