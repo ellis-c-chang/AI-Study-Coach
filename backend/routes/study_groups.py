@@ -137,9 +137,22 @@ def add_group_session(group_id):
         duration=duration
     )
     db.session.add(session)
+    db.session.flush() 
+
+    memberships = GroupMembership.query.filter_by(group_id=group_id).all()
+    for member in memberships:
+        personal_session = StudySession(
+            user_id=member.user_id,
+            subject=subject,
+            scheduled_time=scheduled_time,
+            duration=duration
+        )
+        db.session.add(personal_session)
+
     db.session.commit()
 
-    return jsonify({'message': 'Session added'}), 201
+    return jsonify({'message': 'Group session added and synced to all members'}), 201
+
 
 # Get all study sessions of a group
 @groups_bp.route('/<int:group_id>/sessions', methods=['GET'])
