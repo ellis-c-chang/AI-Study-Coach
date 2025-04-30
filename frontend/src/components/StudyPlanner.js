@@ -131,21 +131,30 @@ const StudyPlanner = ({ user }) => {
   
 
   const handleAddSession = async () => {
-    const duration = (new Date(newSession.end) - new Date(newSession.start)) / 60000;
-    await createStudySession({
-      user_id: user.user_id,
-      subject: newSession.subject,
-      duration,
-      scheduled_time: newSession.start
-    });
-    setShowModal(false);
-    setNewSession({ subject: '', start: '', end: '' });
-    fetchSessions();
+    try {
+      const startDate = new Date(newSession.start);
+      const endDate = new Date(newSession.end);
+      const duration = (endDate - startDate) / 60000;
+      await createStudySession({
+        user_id: user.user_id,
+        subject: newSession.subject,
+        duration,
+        scheduled_time: startDate.toISOString()
+      });
+      setShowModal(false);
+      setNewSession({ subject: '', start: '', end: '' });
+      fetchSessions();
+    } catch (err) {
+      console.error('Failed to add session:', err);
+      alert('Failed to add session. Please try again.');
+    }
   };
 
   const handleUpdateSession = async () => {
     try {
-      const duration = (new Date(editSession.end) - new Date(editSession.start)) / 60000;
+      const startDate = new Date(editSession.start);
+      const endDate = new Date(editSession.end);
+      const duration = Math.round((endDate - startDate) / 60000);
       await updateStudySession(selectedSession.id, {
         user_id: user.user_id,
         subject: editSession.subject,

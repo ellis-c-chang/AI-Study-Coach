@@ -18,10 +18,6 @@ JWT_EXPIRATION = 24 * 60 * 60  # 24 hours in seconds
 @auth_bp.route('/login', methods=['OPTIONS'])
 def auth_options():
     response = make_response()
-    response.headers.add('Access-Control-Allow-Origin', 'https://ai-study-coach.vercel.app')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
-    response.headers.add('Access-Control-Allow-Credentials', 'true')
     return response
 
 @auth_bp.route('/register', methods=['POST'])
@@ -89,12 +85,8 @@ def token_required(f):
         token = None
         auth_header = request.headers.get('Authorization')
         
-        if auth_header:
-            # Format: "Bearer <token>"
-            try:
-                token = auth_header.split(" ")[1]
-            except IndexError:
-                return handle_error('Invalid token format', 401)
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header[7:]  # Remove 'Bearer ' prefix
         
         if not token:
             return handle_error('Token is missing', 401)

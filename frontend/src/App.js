@@ -52,33 +52,38 @@ const App = () => {
     const checkAuth = async () => {
       if (isAuthenticated()) {
         try {
-          const tokenData = JSON.parse(atob(getToken().split('.')[1]));
-          const userData = {
-            user_id: tokenData.user_id,
-            username: tokenData.username
-          };
-          setUser(userData);
-          localStorage.setItem('lastProfileCheck', currentTime.toString());
+          const token = getToken();
+          if (token && token.split('.').length === 3) {
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+            const userData = {
+              user_id: tokenData.user_id,
+              username: tokenData.username
+            };
+            setUser(userData);
+            localStorage.setItem('lastProfileCheck', currentTime.toString());
 
-          const onboardingCompleted = localStorage.getItem('onboardingCompleted') === 'true';
-          if (onboardingCompleted) {
-            setShowOnboarding(false);
-            setHasProfile(true);
-          } else {
-            try {
-              await getProfile(tokenData.user_id);
-              setHasProfile(true);
+            const onboardingCompleted = localStorage.getItem('onboardingCompleted') === 'true';
+            if (onboardingCompleted) {
               setShowOnboarding(false);
-              localStorage.setItem('onboardingCompleted', 'true');
-            } catch (error) {
-              if (error.response?.status === 404) {
-                setHasProfile(false);
-                setShowOnboarding(true);
-              } else {
+              setHasProfile(true);
+            } else {
+              try {
+                await getProfile(tokenData.user_id);
                 setHasProfile(true);
                 setShowOnboarding(false);
+                localStorage.setItem('onboardingCompleted', 'true');
+              } catch (error) {
+                if (error.response?.status === 404) {
+                  setHasProfile(false);
+                  setShowOnboarding(true);
+                } else {
+                  setHasProfile(true);
+                  setShowOnboarding(false);
+                }
               }
             }
+          } else {
+            throw new Error("Invalid token format");
           }
         } catch (error) {
           console.error("Error parsing token:", error);

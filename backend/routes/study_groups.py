@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from backend.database.models import StudyGroup, GroupMembership, GroupStudySession, User
+from backend.database.models import StudyGroup, GroupMembership, GroupStudySession, User, StudySession
 from backend.database import db
 import random
 import string
