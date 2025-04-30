@@ -33,11 +33,12 @@ export const leaveGroup = async (user_id, group_id) => {
 
 
 export const addGroupSession = async (groupId, sessionData) => {
-  const { data } = await API.post(`/groups/${groupId}/sessions`, sessionData);
-  return data;
+  const response = await axios.post(`${API_BASE_URL}/groups/${groupId}/sessions`, sessionData);
+  return response.data;
 };
 
 export const getGroupStudySessions = async (groupId) => {
-  const { data } = await API.get(`/groups/${groupId}/sessions`);
-  return data;
+  const response = await axios.get(`${API_BASE_URL}/groups/${groupId}/sessions`);
+  return response.data;
 };
+
