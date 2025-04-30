@@ -37,7 +37,7 @@ def create_app():
     Migrate(app, db)
 
     # ✅ Proper CORS (let frontend call backend)
-    CORS(app, origins=["https://ai-study-coach.vercel.app"], supports_credentials=True)
+    CORS(app, origins=["https://ai-study-coach.vercel.app", "https://ai-study-coach.onrender.com"], supports_credentials=True)
 
     # Register blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')
