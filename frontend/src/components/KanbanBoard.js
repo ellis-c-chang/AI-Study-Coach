@@ -105,19 +105,32 @@ const KanbanBoard = () => {
   // Add new task to "To-Do" column and save to backend
   const handleAddTask = async () => {
     if (!newTask.trim()) return;
-    
+  
+    const userId = localStorage.getItem('user_id'); // 假设你在登录后保存过 user_id
+  
+    if (!userId) {
+      console.error("User ID not found in localStorage");
+      return;
+    }
+  
     try {
-      const addedTask = await addTask({ title: newTask, status: 'todo' });
+      const addedTask = await addTask({
+        title: newTask,
+        status: 'todo',
+        user_id: parseInt(userId)  // 确保是整数
+      });
+  
       setTasks((prev) => ({
         ...prev,
         todo: [...prev.todo, addedTask]
       }));
+  
       setNewTask('');
     } catch (error) {
       console.error('Error adding task:', error);
-      setError('Failed to add task. Please try again.');
     }
   };
+  
 
   // Move task between columns - using useCallback to avoid recreation on renders
   const moveTask = useCallback(async (taskId, fromStatus, toStatus) => {
