@@ -44,3 +44,16 @@ def delete_task(task_id):
         db.session.commit()
         return jsonify({'message': 'Deleted'}), 200
     return jsonify({'error': 'Task not found'}), 404
+
+@kanban_bp.route('/', methods=['GET'])
+def get_all_tasks():
+    tasks = Task.query.all()
+    return jsonify([
+        {
+            'id': t.id,
+            'title': t.title,
+            'status': t.status,
+            'user_id': t.user_id,
+            'created_at': t.created_at.isoformat()
+        } for t in tasks
+    ]), 200
