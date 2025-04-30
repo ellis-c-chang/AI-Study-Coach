@@ -15,8 +15,6 @@ const TaskItem = ({ task, moveTask, deleteTaskItem }) => {
 
   const handleDelete = (e) => {
     e.stopPropagation();
-    
-    // Add confirmation for done tasks
     if (task.status === 'done') {
       if (window.confirm('Are you sure you want to delete this completed task?')) {
         deleteTaskItem(task.id, task.status);
@@ -46,7 +44,10 @@ const TaskItem = ({ task, moveTask, deleteTaskItem }) => {
 const Column = ({ status, tasks, moveTask, deleteTaskItem }) => {
   const [{ isOver }, drop] = useDrop({
     accept: 'TASK',
-    drop: (item) => moveTask(item.id, item.status, status),
+    drop: (item) => {
+      console.log(`Dropping task ${item.id} from ${item.status} to ${status}`);
+      moveTask(item.id, item.status, status);
+    },
     collect: (monitor) => ({
       isOver: monitor.isOver()
     })
@@ -66,61 +67,89 @@ const Column = ({ status, tasks, moveTask, deleteTaskItem }) => {
     >
       <h3 className="text-lg font-semibold capitalize mb-2">{columnTitles[status] || status}</h3>
       <div className="min-h-[200px]">
-        {tasks.map((task) => (
-          <TaskItem 
-            key={task.id} 
-            task={task} 
-            moveTask={moveTask}
-            deleteTaskItem={deleteTaskItem}
-          />
-        ))}
+        {Array.isArray(tasks) ? (
+          tasks.map((task) => (
+            <TaskItem 
+              key={task.id} 
+              task={task} 
+              moveTask={moveTask}
+              deleteTaskItem={deleteTaskItem}
+            />
+          ))
+        ) : (
+          <p className="text-gray-500 italic">No tasks</p>
+        )}
       </div>
     </div>
   );
 };
 
 const KanbanBoard = () => {
-  const [tasks, setTasks] = useState({ todo: [], inProgress: [], done: [] });
+  // Initialize with empty arrays for each status
+  const [tasks, setTasks] = useState({
+    todo: [],
+    inProgress: [],
+    done: []
+  });
   const [newTask, setNewTask] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Fetch tasks from backend on load
-  useEffect(() => {
-    const fetchTasks = async () => {
-      setLoading(true);
-      try {
-        const data = await getTasks();
-        // Group tasks by status
-        const groupedTasks = {
-          todo: [],
-          inProgress: [],
-          done: []
-        };
-        data.forEach(task => {
-          if (groupedTasks[task.status]) {
-            groupedTasks[task.status].push(task);
+  const fetchTasks = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      console.log("Fetching tasks...");
+      const response = await getTasks();
+      console.log("Raw tasks data:", response);
+      
+      // Create a new empty object for grouped tasks
+      const groupedTasks = {
+        todo: [],
+        inProgress: [],
+        done: []
+      };
+      
+      // Process each task and put it in the appropriate array
+      if (Array.isArray(response)) {
+        response.forEach(task => {
+          // Validate and normalize the task object
+          const normalizedTask = {
+            ...task,
+            id: Number(task.id),
+            status: task.status || 'todo' // Default to todo if no status
+          };
+          
+          // Add task to appropriate status group
+          if (groupedTasks[normalizedTask.status]) {
+            groupedTasks[normalizedTask.status].push(normalizedTask);
           } else {
-            // Default to todo if status is invalid
-            groupedTasks.todo.push({...task, status: 'todo'});
+            groupedTasks.todo.push({...normalizedTask, status: 'todo'});
           }
         });
-        setTasks(groupedTasks);
-      } catch (error) {
-        console.error('Error fetching tasks:', error);
-        setError('Failed to load tasks. Please try again later.');
-      } finally {
-        setLoading(false);
       }
-    };
-    fetchTasks();
+      
+      console.log("Grouped tasks:", groupedTasks);
+      setTasks(groupedTasks);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      setError('Failed to load tasks. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
 
   // Add new task to "To-Do" column and save to backend
   const handleAddTask = async () => {
     if (!newTask.trim()) return;
   
-    const userId = localStorage.getItem('user_id'); // 假设你在登录后保存过 user_id
+    const userId = localStorage.getItem('user_id');
   
     if (!userId) {
       console.error("User ID not found in localStorage");
@@ -129,15 +158,21 @@ const KanbanBoard = () => {
     }
   
     try {
+      setError(null);
+      console.log("Adding task:", newTask);
+      
       const addedTask = await addTask({
         title: newTask,
         status: 'todo',
-        user_id: parseInt(userId)  // 确保是整数
+        user_id: parseInt(userId)
       });
-  
+      
+      console.log("Task added successfully:", addedTask);
+      
+      // Update only the todo list, leaving other lists unchanged
       setTasks(prev => ({
         ...prev,
-        todo: [...prev.todo, addedTask]
+        todo: [...prev.todo, {...addedTask, id: Number(addedTask.id)}]
       }));
   
       setNewTask('');
@@ -147,71 +182,79 @@ const KanbanBoard = () => {
     }
   };
   
-
-  // Move task between columns - using useCallback to avoid recreation on renders
-  const moveTask = useCallback(async (taskId, fromStatus, toStatus) => {
+  // Move task between columns
+  const moveTask = async (taskId, fromStatus, toStatus) => {
     if (fromStatus === toStatus) return;
     
+    // Convert to number for consistent comparison
+    const taskIdNum = Number(taskId);
+    
+    console.log(`Moving task ${taskIdNum} from ${fromStatus} to ${toStatus}`);
+    console.log("Current tasks state:", tasks);
+    
     try {
-      // Convert taskId to number if it's a string
-      const numericTaskId = typeof taskId === 'string' ? parseInt(taskId, 10) : taskId;
+      setError(null);
       
-      // Find the task to move
-      const taskToMove = tasks[fromStatus]?.find(task => {
-        // Compare as numbers to avoid string/number mismatches
-        return task.id === numericTaskId || task.id === taskId;
-      });
+      // Find the task in the source array
+      const sourceArray = tasks[fromStatus] || [];
+      const taskToMove = sourceArray.find(task => Number(task.id) === taskIdNum);
       
       if (!taskToMove) {
-        console.error(`Task not found: ID ${taskId} in ${fromStatus}`);
+        console.error(`Task ${taskIdNum} not found in ${fromStatus} array:`, sourceArray);
+        setError(`Task not found in ${fromStatus} column.`);
         return;
       }
       
-      // Make a copy of the task with the new status
+      console.log("Task to move:", taskToMove);
+      
+      // Update task status in backend first
+      await updateTask(taskIdNum, { status: toStatus });
+      console.log("Backend updated successfully");
+      
+      // Update the UI after backend confirms the change
       const updatedTask = { ...taskToMove, status: toStatus };
       
-      // Update task status in backend
-      await updateTask(numericTaskId, { status: toStatus });
-      
-      // Update local state safely
       setTasks(prev => {
-        // Create a deep copy of the previous state
-        const newState = JSON.parse(JSON.stringify(prev));
+        // Create new arrays to avoid reference issues
+        const newFromArray = (prev[fromStatus] || [])
+          .filter(task => Number(task.id) !== taskIdNum);
         
-        // Remove from old status array
-        if (Array.isArray(newState[fromStatus])) {
-          newState[fromStatus] = newState[fromStatus].filter(t => 
-            t.id !== numericTaskId && t.id !== taskId
-          );
-        }
+        const newToArray = [...(prev[toStatus] || []), updatedTask];
         
-        // Add to new status array
-        if (Array.isArray(newState[toStatus])) {
-          newState[toStatus] = [...newState[toStatus], updatedTask];
-        } else {
-          // Initialize the array if it doesn't exist
-          newState[toStatus] = [updatedTask];
-        }
-        
-        return newState;
+        return {
+          ...prev,
+          [fromStatus]: newFromArray,
+          [toStatus]: newToArray
+        };
       });
+      
+      console.log("Local state updated");
     } catch (error) {
       console.error('Error moving task:', error);
       setError('Failed to move task. Please try again.');
     }
-  }, [tasks]);
+  };
 
-  // Delete task - including the status parameter to identify which column the task is in
+  // Delete task
   const handleDeleteTask = async (taskId, status) => {
+    const taskIdNum = Number(taskId);
+    console.log(`Deleting task ${taskIdNum} from ${status}`);
+    
     try {
-      await deleteTask(taskId);
+      setError(null);
+      await deleteTask(taskIdNum);
       
-      // Update local state
       setTasks(prev => {
-        const newState = { ...prev };
-        newState[status] = newState[status].filter(task => task.id !== taskId);
-        return newState;
+        const newArray = (prev[status] || [])
+          .filter(task => Number(task.id) !== taskIdNum);
+        
+        return {
+          ...prev,
+          [status]: newArray
+        };
       });
+      
+      console.log("Task deleted successfully");
     } catch (error) {
       console.error('Error deleting task:', error);
       setError('Failed to delete task. Please try again.');
