@@ -42,3 +42,7 @@ export const getGroupStudySessions = async (groupId) => {
   return response.data;
 };
 
+export const getGroupMembers = async (groupId) => {
+  const { data } = await API.get(`/groups/${groupId}/members`);
+  return data;
+};
