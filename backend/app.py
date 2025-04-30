@@ -37,7 +37,30 @@ def create_app():
     Migrate(app, db)
 
     # ✅ Proper CORS (let frontend call backend)
-    CORS(app, origins=["https://ai-study-coach.vercel.app", "https://ai-study-coach.onrender.com"], supports_credentials=True)
+    #CORS(app, origins=["https://ai-study-coach.vercel.app", "https://ai-study-coach.onrender.com"], supports_credentials=True)
+
+    # Enable CORS (Frontend React app can connect)
+    @app.after_request
+    def after_request(response):
+        if 'Access-Control-Allow-Origin' not in response.headers:
+            response.headers.add('Access-Control-Allow-Origin', 'https://ai-study-coach.vercel.app')
+            response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+            response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+            response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
+    
+    # Special handler for OPTIONS requests (preflight)
+    @app.route('/', defaults={'path': ''}, methods=['OPTIONS'])
+    @app.route('/<path:path>', methods=['OPTIONS'])
+    def handle_options(path):
+        response = app.response_class(
+            status=200
+        )
+        response.headers.add('Access-Control-Allow-Origin', 'https://ai-study-coach.vercel.app')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
 
     # Register Blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')
