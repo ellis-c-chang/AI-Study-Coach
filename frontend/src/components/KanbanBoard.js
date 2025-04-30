@@ -79,7 +79,7 @@ const Column = ({ status, tasks, moveTask, deleteTaskItem }) => {
   );
 };
 
-const KanbanBoard = () => {
+const KanbanBoard = ({ user }) => {
   const [tasks, setTasks] = useState({ todo: [], inProgress: [], done: [] });
   const [newTask, setNewTask] = useState('');
   const [loading, setLoading] = useState(true);
@@ -107,7 +107,7 @@ const KanbanBoard = () => {
     if (!newTask.trim()) return;
     
     try {
-      const addedTask = await addTask({ title: newTask, status: 'todo' });
+      const addedTask = await addTask({ title: newTask, status: 'todo', user_id: user.user_id });
       setTasks((prev) => ({
         ...prev,
         todo: [...prev.todo, addedTask]
