@@ -1,4 +1,4 @@
-import API from './api';
+import API from './api';  
 
 export const createStudySession = async (sessionData) => {
   const response = await API.post('/study_sessions/', sessionData);
@@ -24,4 +24,3 @@ export const deleteStudySession = async (sessionId) => {
   const response = await API.delete(`/study_sessions/${sessionId}`);
   return response.data;
 };
-
