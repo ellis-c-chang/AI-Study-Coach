@@ -40,6 +40,8 @@ const StudyPlanner = ({ user }) => {
   const fetchTodoTasks = async () => {
     try {
       const res = await API.get(`/kanban/user/${user.user_id}`);
+      console.log("🔥 Current user ID:", user?.user_id);
+
       setTodoTasks(res.data.filter(t => t.status !== 'done')); // 只要未完成的任务
     } catch (err) {
       console.error("Failed to fetch Kanban tasks:", err);
