@@ -36,18 +36,19 @@ def create_app():
     db.init_app(app)
     Migrate(app, db)
 
-    # ✅ Unified and secure CORS setup
-    CORS(app,
-         supports_credentials=True,
-         origins=[
-             "http://localhost:3000",
-             "http://127.0.0.1:3000",
-             "https://ai-study-coach.vercel.app",
-             "https://ai-study-coach-git-ltest-ellis-changs-projects.vercel.app"  # Add preview domain
-         ],
-         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-         allow_headers=["Content-Type", "Authorization"]
-    )
+   CORS(app,
+     supports_credentials=True,
+     origins=[
+         "http://localhost:3000",
+         "http://127.0.0.1:3000",
+         "https://ai-study-coach.vercel.app",
+         "https://ai-study-coach-git-ltest-ellis-changs-projects.vercel.app",  # ✅ ltest branch
+         "https://ai-study-coach-git-preview-deploy-ellis-changs-projects.vercel.app",  # ✅ preview deploy branch
+     ],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+     allow_headers=["Content-Type", "Authorization"]
+)
+
 
     # Register blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')
