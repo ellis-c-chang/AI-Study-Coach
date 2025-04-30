@@ -5,6 +5,7 @@ import {
   createGroup,
   leaveGroup,
   addGroupSession,
+  getGroupMembers  
   getGroupStudySessions
 } from '../services/groupService';
 
@@ -83,7 +84,14 @@ const handleAddSession = async (groupId) => {
       duration: parseInt(newSessionDuration, 10),
     });
     alert('Session added successfully!');
-    /* reset state ... */
+    
+    if (selectedGroup && selectedGroup.group_id === groupId) {
+      await handleViewGroup(selectedGroup);
+    }
+        setNewSessionSubject('');
+    setNewSessionTime('');
+    setNewSessionDuration('');
+    setAddingSessionGroupId(null);
   } catch (err) {
     console.error('Error adding session:', err);
     alert('Failed to add session. Please try again.');
@@ -109,17 +117,10 @@ const handleAddSession = async (groupId) => {
   const handleViewGroup = async (group) => {
   setSelectedGroup(group);
   try {
-    const [membersRes, sessionsRes] = await Promise.all([
-      fetch(`http://127.0.0.1:5000/groups/${group.group_id}/members`, { credentials: 'include' }),
-      fetch(`http://127.0.0.1:5000/groups/${group.group_id}/sessions`, { credentials: 'include' })
+    const [membersData, sessionsData] = await Promise.all([
+      getGroupMembers(group.group_id),
+      getGroupStudySessions(group.group_id),
     ]);
-
-    if (!membersRes.ok || !sessionsRes.ok) {
-      throw new Error('Failed to fetch group data');
-    }
-
-    const membersData = await membersRes.json();
-    const sessionsData = await sessionsRes.json();
 
     setGroupMembers(membersData);
     setGroupSessions(sessionsData);
