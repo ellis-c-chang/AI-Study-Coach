@@ -53,6 +53,17 @@ class GroupStudySession(db.Model):
     created_at     = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+# ──────────────── Kanban / Tasks ────────────────
+class Task(db.Model):
+    id         = db.Column(db.Integer, primary_key=True)
+    user_id    = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title      = db.Column(db.String(255), nullable=False)
+    status     = db.Column(db.String(50), default='todo')  # e.g., 'todo', 'inProgress', 'done'
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref='tasks')
+
+
 # ──────────────── Gamification ────────────────
 class Achievement(db.Model):
     id          = db.Column(db.Integer, primary_key=True)
@@ -100,8 +111,7 @@ class UserProfile(db.Model):
     goals                 = db.Column(db.Text)
     quiz_responses        = db.Column(db.Text)  # JSON dict
     created_at            = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at            = db.Column(db.DateTime, default=datetime.utcnow,
-                                      onupdate=datetime.utcnow)
+    updated_at            = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # helpers
     def set_subjects(self, subjects_list):

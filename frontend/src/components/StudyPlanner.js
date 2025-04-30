@@ -9,9 +9,9 @@ import {
   updateStudySession,
   deleteStudySession,
 } from '../services/sessionService';
-import './StudyPlanner.css';
 import { getMyGroups, getGroupStudySessions } from '../services/groupService';
-
+import API from '../services/api';
+import './StudyPlanner.css';
 
 const StudyPlanner = ({ user }) => {
   const [sessions, setSessions] = useState([]);
@@ -20,41 +20,51 @@ const StudyPlanner = ({ user }) => {
   const [editSession, setEditSession] = useState(null);
   const [newSession, setNewSession] = useState({ subject: '', start: '', end: '' });
   const modalRef = useRef();
+  const [todoTasks, setTodoTasks] = useState([]);
+
+  const fetchTodoTasks = async () => {
+    try {
+      const res = await API.get(`/kanban/user/${user.user_id}`);
+      setTodoTasks(res.data.filter(t => t.status !== 'done'));
+    } catch (err) {
+      console.error("Failed to fetch Kanban tasks:", err);
+    }
+  };
 
   const fetchSessions = async () => {
-  try {
-    const personalData = await getStudySessions(user.user_id);
-    const personalEvents = personalData.map((s) => ({
-      id: `personal-${s.id}`,
-      title: s.subject,
-      start: s.scheduled_time,
-      end: new Date(new Date(s.scheduled_time).getTime() + s.duration * 60000).toISOString(),
-      color: 'blue', // 个人session显示成蓝色
-    }));
-
-    const groups = await getMyGroups(user.user_id);
-    let groupEvents = [];
-    for (const group of groups) {
-      const sessions = await getGroupStudySessions(group.group_id);
-      const mapped = sessions.map((s) => ({
-        id: `group-${s.id}`,
-        title: `[${group.name}] ${s.subject}`, // 显示哪来的
+    try {
+      const personalData = await getStudySessions(user.user_id);
+      const personalEvents = personalData.map((s) => ({
+        id: `personal-${s.id}`,
+        title: s.subject,
         start: s.scheduled_time,
         end: new Date(new Date(s.scheduled_time).getTime() + s.duration * 60000).toISOString(),
-        color: 'purple', // 小组session显示成紫色
+        color: 'blue',
       }));
-      groupEvents = groupEvents.concat(mapped);
+
+      const groups = await getMyGroups(user.user_id);
+      let groupEvents = [];
+      for (const group of groups) {
+        const sessions = await getGroupStudySessions(group.group_id);
+        const mapped = sessions.map((s) => ({
+          id: `group-${s.id}`,
+          title: `[${group.name}] ${s.subject}`,
+          start: s.scheduled_time,
+          end: new Date(new Date(s.scheduled_time).getTime() + s.duration * 60000).toISOString(),
+          color: 'purple',
+        }));
+        groupEvents = groupEvents.concat(mapped);
+      }
+
+      setSessions([...personalEvents, ...groupEvents]);
+    } catch (error) {
+      console.error('Error fetching sessions:', error);
     }
-
-    setSessions([...personalEvents, ...groupEvents]);
-  } catch (error) {
-    console.error('Error fetching sessions:', error);
-  }
-};
-
+  };
 
   useEffect(() => {
     fetchSessions();
+    fetchTodoTasks();
   }, []);
 
   const handleDateClick = (arg) => {
@@ -75,58 +85,52 @@ const StudyPlanner = ({ user }) => {
   };
 
   const handleAddSession = async () => {
-  const duration = (new Date(newSession.end) - new Date(newSession.start)) / 60000;
-  const isoStart = new Date(newSession.start).toISOString(); // 转换为后端需要的 ISO 格式
-  await createStudySession({
-    user_id: user.user_id,
-    subject: newSession.subject,
-    duration,
-    scheduled_time: isoStart,
-  });
-
-  setShowModal(false);
-  setNewSession({ subject: '', start: '', end: '' });
-  fetchSessions();
-};
-
+    const duration = (new Date(newSession.end) - new Date(newSession.start)) / 60000;
+    await createStudySession({
+      user_id: user.user_id,
+      subject: newSession.subject,
+      duration,
+      scheduled_time: new Date(newSession.start).toISOString(),
+    });
+    setShowModal(false);
+    setNewSession({ subject: '', start: '', end: '' });
+    fetchSessions();
+  };
 
   const handleUpdateSession = async () => {
-  if (!selectedSession.id.startsWith('personal-')) {
-    alert('Cannot edit group sessions!');
+    if (!selectedSession.id.startsWith('personal-')) {
+      alert('Cannot edit group sessions!');
+      setShowModal(false);
+      return;
+    }
+    const realId = selectedSession.id.replace('personal-', '');
+
+    const duration = (new Date(editSession.end) - new Date(editSession.start)) / 60000;
+    await updateStudySession(realId, {
+      user_id: user.user_id,
+      subject: editSession.subject,
+      duration,
+      scheduled_time: editSession.start,
+    });
     setShowModal(false);
-    return;
-  }
-  const realId = selectedSession.id.replace('personal-', '');
-
-  const duration = (new Date(editSession.end) - new Date(editSession.start)) / 60000;
-  await updateStudySession(realId, {
-    user_id: user.user_id,
-    subject: editSession.subject,
-    duration,
-    scheduled_time: editSession.start,
-  });
-  setShowModal(false);
-  setSelectedSession(null);
-  setEditSession(null);
-  fetchSessions();
-};
-
+    setSelectedSession(null);
+    setEditSession(null);
+    fetchSessions();
+  };
 
   const handleDeleteSession = async () => {
-  if (!selectedSession.id.startsWith('personal-')) {
-    alert('Cannot delete group sessions!');
+    if (!selectedSession.id.startsWith('personal-')) {
+      alert('Cannot delete group sessions!');
+      setShowModal(false);
+      return;
+    }
+    const realId = selectedSession.id.replace('personal-', '');
+    await deleteStudySession(realId);
     setShowModal(false);
-    return;
-  }
-  const realId = selectedSession.id.replace('personal-', '');
-
-  await deleteStudySession(realId);
-  setShowModal(false);
-  setSelectedSession(null);
-  setEditSession(null);
-  fetchSessions();
-};
-
+    setSelectedSession(null);
+    setEditSession(null);
+    fetchSessions();
+  };
 
   const handleOutsideClick = (e) => {
     if (modalRef.current && !modalRef.current.contains(e.target)) {
@@ -177,10 +181,14 @@ const StudyPlanner = ({ user }) => {
       <div className="w-full md:w-1/4 p-4">
         <div className="bg-white rounded-lg shadow p-4 mb-6">
           <h3 className="text-lg font-medium">To-Do List</h3>
-          <ul className="text-sm mt-2 text-gray-600">
-            <li>📝 Math: review & notes</li>
-            <li>📄 Essay: write and proof</li>
-            <li>🧠 Social: prep for quiz</li>
+          <ul className="text-sm mt-2 text-gray-600 space-y-1">
+            {todoTasks.length === 0 ? (
+              <li className="italic text-gray-400">No tasks yet.</li>
+            ) : (
+              todoTasks.map(task => (
+                <li key={task.id}>📌 {task.title}</li>
+              ))
+            )}
           </ul>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
@@ -189,7 +197,6 @@ const StudyPlanner = ({ user }) => {
         </div>
       </div>
 
-      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
           <div ref={modalRef} className="bg-white rounded-lg shadow-md p-6 w-96">
